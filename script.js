@@ -3,7 +3,7 @@ const ADMIN_PASSWORD = 'admin123';              // Chỉ dùng khi API_URL để
 const INSTAGRAM_URL  = 'https://www.instagram.com/uadochoiha';   // Đổi thành trang Instagram của shop
 const THREADS_URL    = 'https://www.threads.com/@uadochoiha';     // Đổi thành trang Threads của shop
 const PER_PAGE       = 8;                       // Số sản phẩm mỗi trang
-const API_URL        = 'https://script.google.com/macros/s/AKfycbwfFapxc8pXjgVVopGOF2YsS5MiesM9KYNFvbzCKy6pF3rbTo5LPXz9sFHs7HHuvW3_/exec';  // Dán URL Web App của Google Apps Script vào đây. Để trống = lưu trong trình duyệt
+const API_URL        = '';  // Dán URL Web App của Google Apps Script vào đây. Để trống = lưu trong trình duyệt
 const STORE_KEY      = 'uadochoiha_products_v1';
 
 const SAMPLE = [
@@ -22,6 +22,7 @@ const SAMPLE = [
 const $ = s => document.querySelector(s);
 const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d');
 const vnd = n => Number(n).toLocaleString('vi-VN') + ' đ';
+const safeUrl = u => /^https?:\/\//i.test(u || '') ? u : '';
 const esc = s => String(s??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2200)}
 
@@ -75,6 +76,7 @@ function render(){
      <h3>${esc(p.name)}</h3>
      <p class="desc">${esc(p.desc)}</p>
      <div class="price">${vnd(p.price)}</div>
+     ${safeUrl(p.link) ? `<a class="more" href="${esc(safeUrl(p.link))}" target="_blank" rel="noopener noreferrer">Xem bài viết</a>` : ''}
      ${admin ? `<div class="row"><button class="btn" data-edit="${p.id}">Sửa</button><button class="btn g" data-del="${p.id}">Xóa</button></div>` : ''}
     </div>
    </article>`).join('')
@@ -112,7 +114,7 @@ $('#outBtn').onclick = () => {admin=false;PW='';sessionStorage.removeItem('tbx_a
 function openForm(p){
   editId = p ? p.id : null; imgData = p ? (p.img||'') : '';
   $('#dlgTitle').textContent = p ? 'Sửa sản phẩm' : 'Thêm sản phẩm';
-  $('#fName').value = p?.name||''; $('#fPrice').value = p?.price??''; $('#fDesc').value = p?.desc||''; $('#fImg').value='';
+  $('#fName').value = p?.name||''; $('#fPrice').value = p?.price??''; $('#fDesc').value = p?.desc||''; $('#fLink').value = p?.link||''; $('#fImg').value='';
   const pv = $('#prev'); pv.src = imgData; pv.style.display = imgData ? 'block' : 'none';
   $('#dlg').showModal();
 }
@@ -135,7 +137,7 @@ $('#fImg').onchange = e => {
 };
 $('#form').onsubmit = async e => {
   e.preventDefault();
-  const d = {name:$('#fName').value.trim(), price:Math.max(0,+$('#fPrice').value||0), desc:$('#fDesc').value.trim(), img:imgData};
+  const d = {name:$('#fName').value.trim(), price:Math.max(0,+$('#fPrice').value||0), desc:$('#fDesc').value.trim(), link:safeUrl($('#fLink').value.trim()), img:imgData};
   if(API_URL){
     const btn = e.submitter, isNew = imgData.startsWith('data:');
     if(btn) btn.disabled = true;
