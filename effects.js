@@ -33,7 +33,7 @@
   // 2. Biểu tượng dễ thương bay lơ lửng ở nền
   const box = document.createElement('div');
   box.className = 'floaties'; box.setAttribute('aria-hidden', 'true');
-  const em = ['☁️', '✨', '🍓', '🎀', '⭐', '🫧', '🧸', '💗', '🐾'];
+  const em = ['🫧', '✨', '🫧', '💗', '☁️', '🫧', '🐾', '☘️', '⭐'];
   const n = innerWidth < 700 ? 8 : 14;
   for (let i = 0; i < n; i++) {
     const s = document.createElement('span');

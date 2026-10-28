@@ -1,67 +1,81 @@
 @font-face{font-family:'CookieRun';src:url('SRN_CookieRun_Regular.ttf') format('truetype');font-weight:400;font-display:swap}
-:root{--font:CookieRun,Nunito,system-ui,sans-serif;--pink:#ffe3ec;--pink2:#ffb8cf;--pinkd:#e0567f;--cyan:#d4f6f8;--cyan2:#8fe3ea;--cyand:#1b8f9a;--ink:#5b3346;--card:#fff;--line:#f6c9d8}
+:root{--font:CookieRun,Nunito,system-ui,sans-serif;color-scheme:dark;
+--bg:#36425f;--bg2:#2c3753;--card:#43507a;--card2:#51608b;--line:#6679a8;
+--ink:#eef3fc;--mute:#b4c0dc;--sky:#8fd6f5;--pink:#ffa8c5;--iris:#5b63f5;--irisd:#4249d6}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;font-family:var(--font);font-weight:400;font-synthesis:none;color:var(--ink);background:var(--pink);
-background-image:radial-gradient(var(--pink2) 1.2px,transparent 1.2px);background-size:22px 22px}
+body{margin:0;font-family:var(--font);font-weight:400;font-synthesis:none;color:var(--ink);background-color:var(--bg);
+background-image:radial-gradient(circle at 12% 0%,rgba(143,214,245,.2),transparent 38%),radial-gradient(circle at 92% 28%,rgba(255,168,197,.14),transparent 36%),radial-gradient(rgba(143,214,245,.13) 1.2px,transparent 1.2px);
+background-size:auto,auto,24px 24px;background-attachment:fixed,fixed,scroll}
 h1,h2,h3{font-family:var(--font);font-weight:400;margin:0}
 .wrap{max-width:1120px;margin:0 auto;padding:0 18px}
-header{background:var(--cyan);border-bottom:4px dotted var(--cyan2)}
-.top{display:flex;align-items:center;justify-content:space-between;padding:22px 18px;gap:14px;flex-wrap:wrap}
-.logo{font-size:clamp(34px,6vw,58px);font-weight:400;color:var(--pinkd);line-height:1;letter-spacing:-.5px}
-.logo small{display:block;font:400 15px var(--font);color:var(--cyand);letter-spacing:0;margin-top:6px}
-.contact{background:var(--pinkd);color:#fff;text-decoration:none;font-weight:400;padding:10px 20px;border-radius:999px;box-shadow:0 4px 0 #b53a60}
-.contacts{display:flex;gap:10px;flex-wrap:wrap}
-.contact.alt{background:var(--cyand);box-shadow:0 4px 0 #0f666e}
-.contact:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--pinkd);outline-offset:2px}
-.filters{background:#fff;border:3px solid var(--cyan2);border-radius:24px;padding:16px;margin:22px 0;display:grid;gap:12px;
-grid-template-columns:2fr 1fr 1fr 1fr}
-.filters label{font-size:13px;font-weight:400;color:var(--cyand);display:block;margin-bottom:4px}
-input,select,textarea{width:100%;font:inherit;color:var(--ink);padding:10px 12px;border:2px solid var(--line);border-radius:14px;background:#fffafc}
+
+/* Đầu trang theo kiểu trang cá nhân Instagram */
+header{background:var(--bg2);border-bottom:3px dotted var(--line)}
+.top{display:flex;align-items:center;gap:24px;padding:24px 18px;flex-wrap:wrap}
+.avatar{flex:none;width:132px;height:132px;border-radius:50%;padding:4px;transition:transform .3s;
+background:conic-gradient(from 210deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5,#feda75)}
+.avatar:hover{transform:rotate(-8deg) scale(1.05)}
+.avatar img{display:block;width:100%;height:100%;border-radius:50%;border:4px solid var(--bg2);object-fit:cover}
+.who{flex:1;min-width:260px;display:grid;gap:6px}
+.logo{font-size:clamp(30px,5vw,44px);line-height:1.1}
+.kind{margin:0;color:var(--mute);font-size:15px}
+.bio{list-style:none;margin:2px 0 6px;padding:0;display:grid;gap:3px;font-size:15px;line-height:1.4}
+.contacts{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.contact{background:var(--iris);color:#fff;text-decoration:none;padding:10px 22px;border-radius:12px;transition:transform .12s,background .2s}
+.contact.alt{background:var(--card2)}
+.contact:hover{background:var(--irisd)}
+.contact.alt:hover{background:var(--line)}
+:is(.contact,button,input,select,textarea):focus-visible{outline:3px solid var(--sky);outline-offset:2px}
+
+/* Tìm kiếm */
+.filters{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:16px;margin:22px 0;display:grid;gap:12px;grid-template-columns:2fr 1fr 1fr 1fr}
+.filters label,dialog label{font-size:13px;color:var(--sky);display:block;margin-bottom:4px}
+input,select,textarea{width:100%;font:inherit;color:var(--ink);padding:10px 12px;border:2px solid var(--line);border-radius:12px;background:var(--bg2)}
+::placeholder{color:#8794b5}
 .bar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
-.btn{font:400 14px var(--font);border:0;border-radius:999px;padding:9px 18px;cursor:pointer;background:var(--cyan2);color:#0d4f56;box-shadow:0 3px 0 var(--cyand)}
-.btn.p{background:var(--pinkd);color:#fff;box-shadow:0 3px 0 #b53a60}
-.btn.g{background:#fff;box-shadow:none;border:2px solid var(--line)}
+.btn{font:400 14px var(--font);border:0;border-radius:12px;padding:9px 18px;cursor:pointer;background:var(--sky);color:#12304a}
+.btn.p{background:var(--iris);color:#fff}
+.btn.g{background:var(--card2);color:var(--ink)}
+
+/* Sản phẩm */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:22px;padding:8px 0 10px}
-.card{background:var(--card);border:6px solid #fff;border-radius:26px;box-shadow:0 0 0 2px var(--pink2),0 10px 18px rgba(224,86,127,.15);display:flex;flex-direction:column;overflow:hidden;transition:transform .2s}
-.card{--r:-1.2deg;transform:rotate(var(--r));animation:pop .45s cubic-bezier(.34,1.56,.64,1) backwards;animation-delay:calc(var(--i,0)*55ms)}
+.card{--r:-1.2deg;transform:rotate(var(--r));animation:pop .45s cubic-bezier(.34,1.56,.64,1) backwards;animation-delay:calc(var(--i,0)*55ms);
+background:var(--card);border:4px solid var(--card2);border-radius:24px;box-shadow:0 10px 22px rgba(10,16,32,.35);display:flex;flex-direction:column;overflow:hidden;transition:transform .2s,border-color .2s}
 .card:nth-child(even){--r:1.2deg}
-.card:hover{transform:rotate(0) translateY(-4px)}
-.pic{aspect-ratio:1;background:var(--cyan);display:grid;place-items:center;font-size:84px;overflow:hidden}
+.card:hover{transform:rotate(0) translateY(-4px);border-color:var(--sky)}
+.pic{aspect-ratio:1;background:linear-gradient(#a6defa,#dff4fc);display:grid;place-items:center;font-size:84px;overflow:hidden}
 .pic img{width:100%;height:100%;object-fit:cover}
 .info{padding:12px 14px 16px;display:flex;flex-direction:column;gap:6px;flex:1}
 .info h3{font-size:19px;line-height:1.2}
-.price{font:400 20px var(--font);color:var(--pinkd)}
-.desc{font-size:14px;margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.price{font:400 20px var(--font);color:var(--pink)}
+.desc{font-size:14px;margin:0;color:#d5def2;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .row{display:flex;gap:8px;margin-top:auto;padding-top:6px}
-.empty{grid-column:1/-1;text-align:center;padding:40px 10px;font-weight:400;background:#fff;border-radius:24px}
+.empty{grid-column:1/-1;text-align:center;padding:40px 10px;background:var(--card);border-radius:22px;color:var(--mute)}
 .pager{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:26px 0 40px}
-.pager button{min-width:40px;height:40px;border-radius:50%;border:2px solid var(--cyan2);background:#fff;font:400 14px var(--font);color:var(--cyand);cursor:pointer}
-.pager button[aria-current=true]{background:var(--pinkd);border-color:var(--pinkd);color:#fff}
+.pager button{min-width:40px;height:40px;border-radius:50%;border:2px solid var(--line);background:var(--card);font:400 14px var(--font);color:var(--sky);cursor:pointer}
+.pager button[aria-current=true]{background:var(--pink);border-color:var(--pink);color:#2b2d45}
 .pager button:disabled{opacity:.4;cursor:default}
-footer{background:var(--cyan);padding:20px 0;text-align:center;font-size:14px;border-top:4px dotted var(--cyan2)}
-footer button{background:none;border:0;color:var(--cyand);font:inherit;text-decoration:underline;cursor:pointer}
-dialog{border:6px solid #fff;border-radius:26px;padding:20px;width:min(480px,94vw);background:var(--pink);color:var(--ink);box-shadow:0 0 0 2px var(--pink2),0 20px 50px rgba(0,0,0,.25)}
-dialog::backdrop{background:rgba(91,51,70,.45)}
+footer{background:var(--bg2);padding:20px 0;text-align:center;font-size:14px;border-top:3px dotted var(--line);color:var(--mute)}
+footer button{background:none;border:0;color:var(--sky);font:inherit;text-decoration:underline;cursor:pointer}
+
+/* Form quản trị */
+dialog{border:3px solid var(--line);border-radius:24px;padding:20px;width:min(480px,94vw);background:var(--card);color:var(--ink);box-shadow:0 20px 50px rgba(0,0,0,.45)}
+dialog::backdrop{background:rgba(15,20,36,.6)}
 dialog form{display:grid;gap:10px}
-.prev{width:120px;height:120px;border-radius:18px;object-fit:cover;background:var(--cyan);display:none;border:3px solid #fff}
-.admin-bar{background:var(--pinkd);color:#fff;padding:10px 0;font-weight:400}
+.prev{width:120px;height:120px;border-radius:18px;object-fit:cover;background:var(--card2);display:none;border:3px solid var(--line)}
+.admin-bar{background:var(--iris);color:#fff;padding:10px 0}
 .admin-bar .wrap{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.admin-bar .btn{box-shadow:none}
-.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-weight:400;opacity:0;pointer-events:none;transition:opacity .25s}
+.admin-bar .btn.g{background:rgba(255,255,255,.18);color:#fff}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:#2c3753;padding:10px 18px;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .25s;z-index:60}
 .toast.on{opacity:1}
-@media(max-width:760px){.filters{grid-template-columns:1fr 1fr}.filters>div:first-child{grid-column:1/-1}}
-/* Tắt hiệu ứng: do nút bật/tắt hoặc cài đặt "giảm chuyển động" của thiết bị (effects.js gắn class fx-off) */
-.fx-off *,.fx-off *::before{animation:none!important;transition:none!important}
-.fx-off .card{transform:none!important}
-.fx-off .floaties,.fx-off .spark{display:none}
+@media(max-width:760px){.filters{grid-template-columns:1fr 1fr}.filters>div:first-child{grid-column:1/-1}.avatar{width:96px;height:96px}.top{gap:16px}}
 
 /* ===== Hiệu ứng (effects.js) ===== */
 .admin-bar,header,main,footer{position:relative;z-index:1}
-.toast{z-index:60}
 .floaties{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
 .floaties span{position:absolute;bottom:-60px;opacity:0;animation:rise linear infinite}
-@keyframes rise{0%{transform:translate(0,0) rotate(0);opacity:0}10%,90%{opacity:.55}100%{transform:translate(var(--dx),-110vh) rotate(var(--rot));opacity:0}}
+@keyframes rise{0%{transform:translate(0,0) rotate(0);opacity:0}10%,90%{opacity:.5}100%{transform:translate(var(--dx),-110vh) rotate(var(--rot));opacity:0}}
 .spark{position:fixed;pointer-events:none;z-index:50;animation:spark .8s ease-out forwards}
 @keyframes spark{to{transform:translate(var(--x,0),var(--y,30px)) scale(.3) rotate(var(--rot,40deg));opacity:0}}
 @keyframes pop{from{opacity:0;transform:translateY(24px) scale(.85) rotate(var(--r))}to{opacity:1;transform:translateY(0) scale(1) rotate(var(--r))}}
@@ -69,9 +83,13 @@ dialog form{display:grid;gap:10px}
 .logo .ch:hover{animation:wiggle .5s}
 @keyframes drop{from{opacity:0;transform:translateY(-30px) rotate(-12deg)}}
 @keyframes wiggle{25%{transform:rotate(-12deg) scale(1.15)}75%{transform:rotate(12deg) scale(1.15)}}
-.btn,.contact,.pager button{transition:transform .12s}
+.btn,.pager button{transition:transform .12s}
 .btn:active,.contact:active,.pager button:active{transform:translateY(3px) scale(.96)}
 .contact:hover,.btn:hover{transform:translateY(-2px)}
-.fx-toggle{position:fixed;right:14px;bottom:14px;z-index:40;font:400 14px var(--font);padding:9px 16px;border-radius:999px;border:3px solid #fff;background:var(--pinkd);color:#fff;cursor:pointer;box-shadow:0 4px 0 #b53a60}
-.fx-toggle[aria-pressed=false]{background:#fff;color:var(--pinkd);border-color:var(--pink2);box-shadow:0 4px 0 var(--pink2)}
-.fx-toggle:focus-visible{outline:3px solid var(--cyand);outline-offset:2px}
+.fx-toggle{position:fixed;right:14px;bottom:14px;z-index:40;font:400 14px var(--font);padding:9px 16px;border-radius:999px;border:3px solid var(--card2);background:var(--iris);color:#fff;cursor:pointer}
+.fx-toggle[aria-pressed=false]{background:var(--card);color:var(--mute);border-color:var(--line)}
+.fx-toggle:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
+/* Tắt hiệu ứng: do nút bật/tắt hoặc cài đặt "giảm chuyển động" của thiết bị (effects.js gắn class fx-off) */
+.fx-off *,.fx-off *::before{animation:none!important;transition:none!important}
+.fx-off .card{transform:none!important}
+.fx-off .floaties,.fx-off .spark{display:none}
