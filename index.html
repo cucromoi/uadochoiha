@@ -33,6 +33,7 @@
   <div class="contacts">
    <a class="contact" id="ctIg" href="#" target="_blank" rel="noopener">Nhắn Instagram</a>
    <a class="contact alt" id="ctTh" href="#" target="_blank" rel="noopener">Nhắn Threads</a>
+   <button type="button" class="contact alt" id="noteBtn">Lưu ý khi order</button>
   </div>
  </div>
 </div></header>
@@ -65,6 +66,7 @@
    <p>☘️ ORDER taobao, 1688, pindoudou,...</p>
    <p>🫧 Nhận tìm đồ theo link/ảnh</p>
    <p>📍 HCM - only banking</p>
+   <button type="button" id="noteBtn2">Xem lưu ý khi order</button>
   </div>
  </div>
  <div class="wrap ft-bottom">
@@ -73,6 +75,20 @@
   <span class="ft-actions"><button type="button" id="toTop">Lên đầu trang</button><button type="button" id="loginBtn">Quản trị</button></span>
  </div>
 </footer>
+
+<dialog id="noteDlg" class="note" aria-labelledby="noteTitle">
+ <h2 id="noteTitle">Lưu ý khi order 🍀</h2>
+ <ol class="notes">
+  <li><span class="nt">Phụ phí</span>Tất cả hàng bên mình đều chưa full phí, tính phụ phí sau khi hàng về. Phụ phí bao gồm: ship nội địa Trung (nếu có) + cân Trung Việt.</li>
+  <li><span class="nt">Chốt order và thời gian hàng về</span>Mình chốt order sau khi bạn đã chuyển khoản tiền hàng. Mình sẽ luôn báo ngày đóng gom (trong tuần, tháng), vì là hàng order nên chắc chắn sẽ thiệt thòi về thời gian, hàng về 2-3 tuần tính từ lúc đóng gom. Nếu lâu hơn thì tùy tình hình biên, đây là việc mình không thể kiểm soát được nên sẽ hỗ trợ update thông tin cho mọi người nhất có thể.</li>
+  <li><span class="nt">Hàng về và sample</span>Hàng order về có thể không giống với sample 100% (chênh lệch màu, chi tiết nhỏ,...).</li>
+  <li><span class="nt">Hủy đơn</span>Đơn đã chốt/cọc nhưng hủy ngang =&gt; không hoàn tiền.</li>
+  <li><span class="nt">Hàng kẹt biên</span>Hàng kẹt biên - hải quan kiểm tra: không giục hoặc yêu cầu hoàn tiền.</li>
+  <li><span class="nt">Khiếu nại</span>Chỉ xử lý đơn khi quay rõ sản phẩm, đầy đủ góc, không cắt ghép chỉnh sửa, đơn không rời khung hình.</li>
+ </ol>
+ <p class="thanks">Còn thắc mắc gì thêm mọi người cứ thoải mái hỏi mình nhen, cảm ơn bạn đã tin tưởng uadochoiha 🍀</p>
+ <div style="text-align:center"><button type="button" class="btn p" id="noteClose">Mình đã đọc</button></div>
+</dialog>
 
 <dialog id="dlg">
  <form id="form" method="dialog">

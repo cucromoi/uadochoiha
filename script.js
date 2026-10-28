@@ -187,6 +187,13 @@ $('#impFile').onchange = e => {
 
 $('#ctIg').href = INSTAGRAM_URL;
 $('#ctTh').href = THREADS_URL;
+const noteDlg = $('#noteDlg');
+['#noteBtn', '#noteBtn2'].forEach(id => $(id).onclick = () => noteDlg.showModal());
+$('#noteClose').onclick = () => noteDlg.close();
+noteDlg.addEventListener('click', e => {
+  const r = noteDlg.getBoundingClientRect();
+  if(e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) noteDlg.close();
+});
 $('#ftIg').href = INSTAGRAM_URL;
 $('#ftTh').href = THREADS_URL;
 $('#yr').textContent = new Date().getFullYear();

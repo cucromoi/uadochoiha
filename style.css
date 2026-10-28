@@ -24,6 +24,7 @@ background:conic-gradient(from 210deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5,#f
 .contacts{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
 .contact{background:var(--iris);color:#fff;text-decoration:none;padding:10px 22px;border-radius:12px;transition:transform .12s,background .2s}
 .contact.alt{background:var(--card2)}
+button.contact{font:inherit;border:0;cursor:pointer}
 .contact:hover{background:var(--irisd)}
 .contact.alt:hover{background:var(--line)}
 :is(.contact,button,input,select,textarea):focus-visible{outline:3px solid var(--sky);outline-offset:2px}
@@ -83,6 +84,12 @@ dialog{border:3px solid var(--line);border-radius:24px;padding:20px;width:min(48
 dialog::backdrop{background:rgba(15,20,36,.6)}
 dialog form{display:grid;gap:10px}
 .prev{width:120px;height:120px;border-radius:18px;object-fit:cover;background:var(--card2);display:none;border:3px solid var(--line)}
+.note{width:min(640px,94vw);max-height:88vh;overflow:auto}
+.notes{list-style:none;counter-reset:n;margin:12px 0;padding:0;display:grid;gap:10px}
+.notes li{counter-increment:n;position:relative;padding:12px 14px 12px 54px;background:var(--bg2);border-radius:16px;line-height:1.5;font-size:15px}
+.notes li::before{content:counter(n);position:absolute;left:14px;top:12px;width:28px;height:28px;border-radius:50%;background:var(--pink);color:#2b2d45;display:grid;place-items:center;font-size:14px}
+.nt{display:block;color:var(--sky);margin-bottom:2px}
+.thanks{color:var(--mute);text-align:center;margin:12px 0}
 .admin-bar{background:var(--iris);color:#fff;padding:10px 0}
 .admin-bar .wrap{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .admin-bar .btn.g{background:rgba(255,255,255,.18);color:#fff}
