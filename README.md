@@ -2,7 +2,7 @@
 
 Website cửa hàng đồ chơi — trang giới thiệu, tìm kiếm và đặt hàng sản phẩm. Nhận order Taobao, chốt đơn qua inbox, ship toàn quốc.
 
-> Demo: https://cucromoi.github.io/uadochoiha/ *(nếu bật GitHub Pages)*
+> Website: https://cucromoi.github.io/uadochoiha/
 
 ## Tính năng
 
