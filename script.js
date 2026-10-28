@@ -29,6 +29,8 @@ function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clea
 let products = [], admin = sessionStorage.getItem('tbx_admin') === '1', page = 1, editId = null, imgData = '';
 
 let PW = sessionStorage.getItem('tbx_pw') || '';
+let apiVersion = 0;
+const OLD_MSG = 'Apps Script đang chạy bản CŨ nên chưa lưu được link. Hãy dán lại Code.gs mới, rồi vào Triển khai > Quản lý bản triển khai > biểu tượng bút chì > Phiên bản mới > Triển khai. Nếu bạn tạo "triển khai mới" thì URL đã đổi, hãy dán URL mới vào API_URL trong script.js.';
 async function api(action, data = {}, post = false){
   const r = post
     ? await fetch(API_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({action, password:PW, ...data})})
@@ -37,7 +39,7 @@ async function api(action, data = {}, post = false){
 }
 async function load(){
   if(API_URL){
-    try{ const r = await api('list'); products = r.products || []; }
+    try{ const r = await api('list'); products = r.products || []; apiVersion = r.version || 0; }
     catch(e){ products = []; toast('Không tải được dữ liệu từ Google, kiểm tra lại API_URL'); }
     return;
   }
@@ -106,7 +108,7 @@ $('#loginBtn').onclick = async () => {
     PW = p;
     try{ ok = (await api('auth', {}, true)).ok; }catch(e){ return toast('Không kết nối được Google Apps Script'); }
   } else ok = (p === ADMIN_PASSWORD);
-  if(ok){admin=true;sessionStorage.setItem('tbx_admin','1');sessionStorage.setItem('tbx_pw',PW);render();toast('Đăng nhập thành công')}
+  if(ok){admin=true;sessionStorage.setItem('tbx_admin','1');sessionStorage.setItem('tbx_pw',PW);render();toast('Đăng nhập thành công'); if(API_URL && apiVersion < 2) alert(OLD_MSG)}
   else {PW='';toast('Sai mật khẩu, thử lại nhé')}
 };
 $('#outBtn').onclick = () => {admin=false;PW='';sessionStorage.removeItem('tbx_admin');sessionStorage.removeItem('tbx_pw');render()};
@@ -138,6 +140,7 @@ $('#fImg').onchange = e => {
 $('#form').onsubmit = async e => {
   e.preventDefault();
   const d = {name:$('#fName').value.trim(), price:Math.max(0,+$('#fPrice').value||0), desc:$('#fDesc').value.trim(), link:safeUrl($('#fLink').value.trim()), img:imgData};
+  let stale = false;
   if(API_URL){
     const btn = e.submitter, isNew = imgData.startsWith('data:');
     if(btn) btn.disabled = true;
@@ -146,6 +149,7 @@ $('#form').onsubmit = async e => {
       const old = editId ? products.find(x=>x.id===editId) : null;
       const r = await api('save', {product:{...d, id:editId||Date.now(), emoji:old?.emoji||'🧸', img:isNew?(old?.img||''):imgData}, image:isNew?imgData:''}, true);
       if(!r.ok) throw new Error(r.error);
+      if(d.link && !('link' in r.product)) stale = true;
       const k = products.findIndex(x=>x.id===r.product.id);
       if(k>=0) products[k] = r.product; else products.push(r.product);
     }catch(err){ if(btn) btn.disabled = false; return toast('Lỗi: ' + err.message); }
@@ -155,7 +159,8 @@ $('#form').onsubmit = async e => {
     else products.push({id:Date.now(), emoji:'🧸', ...d});
     save();
   }
-  $('#dlg').close(); render(); toast('Đã lưu sản phẩm');
+  $('#dlg').close(); render();
+  if(stale) alert(OLD_MSG); else toast('Đã lưu sản phẩm');
 };
 $('#grid').onclick = async e => {
   const ed = e.target.closest('[data-edit]'), dl = e.target.closest('[data-del]');
