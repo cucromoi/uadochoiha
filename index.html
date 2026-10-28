@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>uadochoiha – đồ cute đáng yêu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="adminBar" class="admin-bar" hidden><div class="wrap">
+ <span>Chế độ quản trị</span>
+ <button class="btn g" id="addBtn">Thêm sản phẩm</button>
+ <button class="btn g" id="expBtn">Xuất products.json</button>
+ <button class="btn g" id="impBtn">Nhập products.json</button>
+ <button class="btn g" id="outBtn">Đăng xuất</button>
+ <input type="file" id="impFile" accept="application/json" hidden>
+</div></div>
+
+<header><div class="wrap top">
+ <div class="logo">uadochoiha<small>Đồ dùng cute, xinh xỉu cho góc nhỏ của bạn</small></div>
+ <div class="contacts">
+  <a class="contact" id="ctIg" href="#" target="_blank" rel="noopener">Nhắn Instagram</a>
+  <a class="contact alt" id="ctTh" href="#" target="_blank" rel="noopener">Nhắn Threads</a>
+ </div>
+</div></header>
+
+<main class="wrap">
+ <section class="filters" aria-label="Tìm kiếm sản phẩm">
+  <div><label for="q">Tìm theo tên hoặc mô tả</label><input id="q" type="search" placeholder="Ví dụ: gấu bông, cốc, kẹp tóc..."></div>
+  <div><label for="min">Giá từ (đ)</label><input id="min" type="number" min="0" step="1000" placeholder="0"></div>
+  <div><label for="max">Giá đến (đ)</label><input id="max" type="number" min="0" step="1000" placeholder="Không giới hạn"></div>
+  <div><label for="sort">Sắp xếp</label><select id="sort"><option value="new">Mới nhất</option><option value="asc">Giá tăng dần</option><option value="desc">Giá giảm dần</option><option value="name">Tên A–Z</option></select></div>
+ </section>
+ <div class="bar"><h2 id="count"></h2><button class="btn g" id="reset">Xóa bộ lọc</button></div>
+ <section class="grid" id="grid" aria-live="polite"></section>
+ <nav class="pager" id="pager" aria-label="Phân trang"></nav>
+</main>
+
+<footer><div class="wrap">© uadochoiha · <button id="loginBtn">Quản trị</button></div></footer>
+
+<dialog id="dlg">
+ <form id="form" method="dialog">
+  <h2 id="dlgTitle">Thêm sản phẩm</h2>
+  <div><label for="fImg">Hình ảnh</label><input id="fImg" type="file" accept="image/*"><img class="prev" id="prev" alt="Xem trước"></div>
+  <div><label for="fName">Tên sản phẩm</label><input id="fName" required maxlength="80"></div>
+  <div><label for="fPrice">Giá (đ)</label><input id="fPrice" type="number" min="0" step="500" required></div>
+  <div><label for="fDesc">Mô tả</label><textarea id="fDesc" rows="3" maxlength="400"></textarea></div>
+  <div style="display:flex;gap:10px;justify-content:flex-end"><button type="button" class="btn g" id="cancel">Hủy</button><button type="submit" class="btn p">Lưu sản phẩm</button></div>
+ </form>
+</dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="script.js"></script>
+<script src="effects.js"></script>
+</body>
+</html>
