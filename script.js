@@ -116,10 +116,62 @@ $('#outBtn').onclick = () => {admin=false;PW='';sessionStorage.removeItem('tbx_a
 function openForm(p){
   editId = p ? p.id : null; imgData = p ? (p.img||'') : '';
   $('#dlgTitle').textContent = p ? 'Sửa sản phẩm' : 'Thêm sản phẩm';
-  $('#fName').value = p?.name||''; $('#fPrice').value = p?.price??''; $('#fDesc').value = p?.desc||''; $('#fLink').value = p?.link||''; $('#fImg').value='';
+  $('#fName').value = p?.name||''; $('#fPrice').value = p?.price??''; $('#fDesc').value = p?.desc||''; $('#fLink').value = p?.link||''; $('#fImg').value=''; $('#fQuick').value=''; $('#fIgUrl').value='';
   const pv = $('#prev'); pv.src = imgData; pv.style.display = imgData ? 'block' : 'none';
   $('#dlg').showModal();
 }
+/* Điền nhanh từ caption Instagram: lấy tên, giá, mô tả, link */
+function parseCaption(text){
+  const out = {};
+  const url = text.match(/https?:\/\/[^\s]+/);
+  if(url) out.link = url[0];
+  let t = text.replace(/https?:\/\/[^\s]+/g, '').trim();
+  let m = t.match(/(\d+(?:[.,]\d+)?)\s*k\b/i);
+  if(m) out.price = Math.round(parseFloat(m[1].replace(',', '.')) * 1000);
+  else if((m = t.match(/(\d{1,3}(?:[.,]\d{3})+)\s*(?:đ|d|vnd)?/i))) out.price = parseInt(m[1].replace(/[.,]/g, ''), 10);
+  const emo = /[\p{Extended_Pictographic}\u200d\ufe0f]+/gu;
+  const lines = t.split(/\n/).map(l => l.trim()).filter(Boolean);
+  const isPrice = l => /^(price|giá|gia)\b/i.test(l);
+  const first = (lines.find(l => !isPrice(l)) || '');
+  let name = first.split(emo)[0].split(/\s+size\b/i)[0].replace(/[,:;.\s]+$/, '').trim();
+  if(name) out.name = name.charAt(0).toUpperCase() + name.slice(1);
+  let desc = t.replace(emo, ' ').split(/\n/).map(l => l.trim()).filter(l => l && !isPrice(l)).join(' ');
+  if(name) desc = desc.replace(name, '').trim();
+  desc = desc.replace(/\s*>\s*<\s*/g, ' ').replace(/\s{2,}/g, ' ').trim();
+  if(desc) out.desc = desc.charAt(0).toUpperCase() + desc.slice(1);
+  return out;
+}
+function fillFrom(text){
+  const r = parseCaption(text);
+  if(r.name) $('#fName').value = r.name;
+  if(r.price) $('#fPrice').value = r.price;
+  if(r.desc) $('#fDesc').value = r.desc;
+  if(r.link) $('#fLink').value = r.link;
+  return Object.keys(r).length > 0;
+}
+$('#quickBtn').onclick = () => toast(fillFrom($('#fQuick').value) ? 'Đã điền, bạn kiểm tra lại rồi chọn ảnh nhé' : 'Không đọc được gì từ nội dung này');
+const shrinkDataUrl = src => new Promise(res => {
+  const i = new Image();
+  i.onload = () => { const k = Math.min(1, 700/Math.max(i.width, i.height)), c = document.createElement('canvas');
+    c.width = Math.round(i.width*k); c.height = Math.round(i.height*k); c.getContext('2d').drawImage(i,0,0,c.width,c.height); res(c.toDataURL('image/jpeg',.78)); };
+  i.onerror = () => res('');
+  i.src = src;
+});
+$('#igBtn').onclick = async () => {
+  const url = $('#fIgUrl').value.trim().split('?')[0];
+  if(!/^https?:\/\/(www\.)?instagram\.com\//i.test(url)) return toast('Hãy dán link bài viết Instagram');
+  const btn = $('#igBtn'); btn.disabled = true; toast('Đang lấy dữ liệu từ Instagram...');
+  try{
+    const r = await api('ig', {url}, true);
+    if(!r.ok) throw new Error(r.error === 'Hành động không hợp lệ' ? 'Apps Script chưa là bản mới (cần Code.gs có hàm lấy link)' : r.error);
+    $('#fQuick').value = r.caption || '';
+    fillFrom((r.caption || '') + '\n' + url);
+    $('#fLink').value = url;
+    if(r.image){ const small = await shrinkDataUrl(r.image); if(small){ imgData = small; $('#prev').src = small; $('#prev').style.display = 'block'; } }
+    toast(r.image ? 'Đã lấy ảnh, tên, giá. Kiểm tra lại rồi lưu nhé' : 'Đã lấy caption, chưa lấy được ảnh. Hãy chọn ảnh tay');
+  }catch(err){ toast('Không lấy được: ' + err.message + '. Hãy dán caption tay nhé'); }
+  btn.disabled = false;
+};
 $('#addBtn').onclick = () => openForm();
 $('#cancel').onclick = () => $('#dlg').close();
 
@@ -197,6 +249,29 @@ noteDlg.addEventListener('click', e => {
 $('#ftIg').href = INSTAGRAM_URL;
 $('#ftTh').href = THREADS_URL;
 $('#yr').textContent = new Date().getFullYear();
+
+/* Bộ đếm lượt truy cập (cần Apps Script): mỗi lần mở web trong một phiên tính 1 lượt, admin đang đăng nhập không tính */
+async function countVisit(){
+  if(!API_URL) return;
+  try{
+    let url = API_URL + '?action=stats';
+    if(!sessionStorage.getItem('uadochoiha_v') && !admin){
+      let isNew = true;
+      try{ isNew = !localStorage.getItem('uadochoiha_vid'); localStorage.setItem('uadochoiha_vid', '1'); }catch(e){}
+      sessionStorage.setItem('uadochoiha_v', '1');
+      url = API_URL + '?action=visit&n=' + (isNew ? 1 : 0);
+    }
+    const r = await (await fetch(url)).json();
+    if(!r.ok) return;
+    const el = $('#visitCount'), n = Number(r.visits) || 0;
+    $('#visitBox').hidden = false;
+    if(document.documentElement.classList.contains('fx-off') || n < 2){ el.textContent = n.toLocaleString('vi-VN'); return; }
+    const t0 = performance.now();
+    (function tick(t){ const k = Math.min(1, (t - t0) / 1200); el.textContent = Math.round(n * (1 - Math.pow(1 - k, 3))).toLocaleString('vi-VN'); if(k < 1) requestAnimationFrame(tick); })(t0);
+  }catch(e){}
+}
+countVisit();
 $('#toTop').onclick = () => scrollTo({top:0, behavior:'smooth'});
 if(API_URL){ $('#expBtn').hidden = true; $('#impBtn').hidden = true; }
+$('#igRow').hidden = !API_URL;
 load().then(render);

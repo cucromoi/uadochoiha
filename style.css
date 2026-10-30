@@ -69,9 +69,12 @@ footer button{background:none;border:0;color:var(--sky);font:inherit;text-decora
 .ft-brand p,.ft-col p{margin:0}
 .ft h3{font-size:15px;color:var(--sky);margin-bottom:8px}
 .ft-col{display:grid;gap:6px;align-content:start}
+.ft-col button{justify-self:start;padding:0;text-align:left}
 .ft-col a{color:var(--ink);text-decoration:none;width:fit-content;border-bottom:1px dashed var(--line)}
 .ft-col a:hover{color:var(--pink);border-color:var(--pink)}
 .ft-bottom{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:16px 18px 76px;border-top:1px solid var(--line)}
+.ft-left{display:grid;gap:4px}
+.visits{color:var(--sky)}
 .ft-actions{display:flex;gap:16px}
 .credit{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;padding:8px 18px;border-radius:999px;border:2px solid transparent;
 background:linear-gradient(var(--card),var(--card)) padding-box,conic-gradient(from 210deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5,#feda75) border-box}
@@ -90,6 +93,12 @@ dialog form{display:grid;gap:10px}
 .notes li::before{content:counter(n);position:absolute;left:14px;top:12px;width:28px;height:28px;border-radius:50%;background:var(--pink);color:#2b2d45;display:grid;place-items:center;font-size:14px}
 .nt{display:block;color:var(--sky);margin-bottom:2px}
 .thanks{color:var(--mute);text-align:center;margin:12px 0}
+.quick{background:var(--bg2);border-radius:14px;padding:10px 12px}
+.quick summary{cursor:pointer;color:var(--sky)}
+.quick p{margin:8px 0;font-size:13px;color:var(--mute)}
+.quick .btn{margin-top:8px}
+.igrow{display:flex;gap:8px;margin-top:8px}
+.igrow .btn{margin-top:0;white-space:nowrap}
 .admin-bar{background:var(--iris);color:#fff;padding:10px 0}
 .admin-bar .wrap{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .admin-bar .btn.g{background:rgba(255,255,255,.18);color:#fff}

@@ -70,7 +70,7 @@
   </div>
  </div>
  <div class="wrap ft-bottom">
-  <span>© <span id="yr">2026</span> uadochoiha</span>
+  <div class="ft-left"><span>© <span id="yr">2026</span> uadochoiha</span><span class="visits" id="visitBox" hidden>👀 <span id="visitCount">0</span> lượt truy cập</span></div>
   <span class="credit">Made with 💗 by <span class="nm">Trương Nhật Nam</span> <span class="tt">IT siêu cấp đẹp trai nhất vũ trụ 🚀</span></span>
   <span class="ft-actions"><button type="button" id="toTop">Lên đầu trang</button><button type="button" id="loginBtn">Quản trị</button></span>
  </div>
@@ -93,6 +93,12 @@
 <dialog id="dlg">
  <form id="form" method="dialog">
   <h2 id="dlgTitle">Thêm sản phẩm</h2>
+  <details class="quick"><summary>Điền nhanh từ bài viết Instagram</summary>
+   <div class="igrow" id="igRow"><input id="fIgUrl" type="url" placeholder="Dán link bài viết Instagram để tự lấy ảnh và caption"><button type="button" class="btn p" id="igBtn">Lấy từ link</button></div>
+   <p>Nếu không lấy được, hãy copy caption bài viết dán vào ô dưới (dán kèm link thì link cũng được điền luôn).</p>
+   <textarea id="fQuick" rows="4" placeholder="Dán caption bài viết..."></textarea>
+   <button type="button" class="btn" id="quickBtn">Tự điền tên, giá, mô tả</button>
+  </details>
   <div><label for="fImg">Hình ảnh</label><input id="fImg" type="file" accept="image/*"><img class="prev" id="prev" alt="Xem trước"></div>
   <div><label for="fName">Tên sản phẩm</label><input id="fName" required maxlength="80"></div>
   <div><label for="fPrice">Giá (đ)</label><input id="fPrice" type="number" min="0" step="500" required></div>
