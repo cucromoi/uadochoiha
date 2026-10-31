@@ -45,8 +45,14 @@
   <div><label for="max">Giá đến (đ)</label><input id="max" type="number" min="0" step="1000" placeholder="Không giới hạn"></div>
   <div><label for="sort">Sắp xếp</label><select id="sort"><option value="new">Mới nhất</option><option value="asc">Giá tăng dần</option><option value="desc">Giá giảm dần</option><option value="name">Tên A–Z</option></select></div>
  </section>
- <div class="bar"><h2 id="count"></h2><button class="btn g" id="reset">Xóa bộ lọc</button></div>
- <section class="grid" id="grid" aria-live="polite"></section>
+ <div class="bar"><h2 id="count">Đang tải...</h2><button class="btn g" id="reset">Xóa bộ lọc</button></div>
+ <section class="grid" id="grid" aria-live="polite">
+  <div class="loader" role="status">
+   <div class="lo-av"><img src="avatar.png" alt=""><i></i><i></i><i></i></div>
+   <p id="loadMsg">Đang gọi hàng về cho bạn...</p>
+   <div class="dots" aria-hidden="true"><b></b><b></b><b></b></div>
+  </div>
+ </section>
  <nav class="pager" id="pager" aria-label="Phân trang"></nav>
 </main>
 

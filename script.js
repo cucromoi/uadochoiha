@@ -274,4 +274,8 @@ countVisit();
 $('#toTop').onclick = () => scrollTo({top:0, behavior:'smooth'});
 if(API_URL){ $('#expBtn').hidden = true; $('#impBtn').hidden = true; }
 $('#igRow').hidden = !API_URL;
+/* Đổi câu chữ trong lúc chờ tải dữ liệu, tự dừng khi danh sách hiện ra */
+const loadMsgs = ['Đang gọi hàng về cho bạn...', 'Chờ xíu nhen 🫧', 'Đang thổi bong bóng nè...', 'Sắp xong rồi nè ☘️'];
+let loadIdx = 0;
+const loadTimer = setInterval(() => { const m = $('#loadMsg'); if(!m) return clearInterval(loadTimer); m.textContent = loadMsgs[++loadIdx % loadMsgs.length]; }, 1700);
 load().then(render);
