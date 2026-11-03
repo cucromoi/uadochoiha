@@ -3,7 +3,7 @@ const ADMIN_PASSWORD = 'admin123';              // Chỉ dùng khi API_URL để
 const INSTAGRAM_URL  = 'https://www.instagram.com/uadochoiha';   // Đổi thành trang Instagram của shop
 const THREADS_URL    = 'https://www.threads.com/@uadochoiha';     // Đổi thành trang Threads của shop
 const PER_PAGE       = 8;                       // Số sản phẩm mỗi trang
-const API_URL        = 'https://script.google.com/macros/s/AKfycbxEsvRnYkZs1QVBHmn4n_yw-VaK6SdlUrvhlAguF66MAJL7AXFV7D48aSQgF8Cf02Zv/exec';  // Dán URL Web App của Google Apps Script vào đây. Để trống = lưu trong trình duyệt
+const API_URL        = 'https://script.google.com/macros/s/AKfycbww-IliW5hyi84g0frI6kVUM41zluW5fVaju0GC7ZWnOYZjFt0nZ5gHmdpHrid51CPK/exec';  // Dán URL Web App của Google Apps Script vào đây. Để trống = lưu trong trình duyệt
 const STORE_KEY      = 'uadochoiha_products_v1';
 
 const SAMPLE = [
@@ -126,6 +126,8 @@ function parseCaption(text){
   const url = text.match(/https?:\/\/[^\s]+/);
   if(url) out.link = url[0];
   let t = text.replace(/https?:\/\/[^\s]+/g, '').trim();
+  // Bỏ phần đầu kiểu '500 likes, 2 comments - shop trên October 12, 2026: "' nếu có
+  t = t.replace(/^[^"“\n]*?(?:likes?|lượt thích|comments?|bình luận)[^"“\n]*?:\s*["“]/i, '').replace(/["”]\.?\s*$/, '').trim();
   let m = t.match(/(\d+(?:[.,]\d+)?)\s*k\b/i);
   if(m) out.price = Math.round(parseFloat(m[1].replace(',', '.')) * 1000);
   else if((m = t.match(/(\d{1,3}(?:[.,]\d{3})+)\s*(?:đ|d|vnd)?/i))) out.price = parseInt(m[1].replace(/[.,]/g, ''), 10);
@@ -133,11 +135,12 @@ function parseCaption(text){
   const lines = t.split(/\n/).map(l => l.trim()).filter(Boolean);
   const isPrice = l => /^(price|giá|gia)\b/i.test(l);
   const first = (lines.find(l => !isPrice(l)) || '');
-  let name = first.split(emo)[0].split(/\s+size\b/i)[0].replace(/[,:;.\s]+$/, '').trim();
+  let name = first.split(emo)[0].split(/\s+size\b/i)[0].split(/\s*(?:=\)+|:\)+|><|\.{2,})/)[0].replace(/[,:;.\s]+$/, '').trim();
   if(name) out.name = name.charAt(0).toUpperCase() + name.slice(1);
   let desc = t.replace(emo, ' ').split(/\n/).map(l => l.trim()).filter(l => l && !isPrice(l)).join(' ');
   if(name) desc = desc.replace(name, '').trim();
   desc = desc.replace(/\s*>\s*<\s*/g, ' ').replace(/\s{2,}/g, ' ').trim();
+  desc = desc.replace(/^[=:;)>< ]+/, '').trim();
   if(desc) out.desc = desc.charAt(0).toUpperCase() + desc.slice(1);
   return out;
 }
