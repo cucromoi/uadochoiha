@@ -3,7 +3,7 @@ const ADMIN_PASSWORD = 'admin123';              // Chỉ dùng khi API_URL để
 const INSTAGRAM_URL  = 'https://www.instagram.com/uadochoiha';   // Đổi thành trang Instagram của shop
 const THREADS_URL    = 'https://www.threads.com/@uadochoiha';     // Đổi thành trang Threads của shop
 const PER_PAGE       = 8;                       // Số sản phẩm mỗi trang
-const API_URL        = 'https://script.google.com/macros/s/AKfycbww-IliW5hyi84g0frI6kVUM41zluW5fVaju0GC7ZWnOYZjFt0nZ5gHmdpHrid51CPK/exec';  // Dán URL Web App của Google Apps Script vào đây. Để trống = lưu trong trình duyệt
+const API_URL        = 'https://script.google.com/macros/s/AKfycbwnhQrtUVToMRAGir4G67O2-BZVG6gHV_hINgIrbWubOgSxJS2WB15_x07XI1DFQpEn/exec';  // Dán URL Web App của Google Apps Script vào đây. Để trống = lưu trong trình duyệt
 const STORE_KEY      = 'uadochoiha_products_v1';
 
 const SAMPLE = [
@@ -153,27 +153,37 @@ function fillFrom(text){
   return Object.keys(r).length > 0;
 }
 $('#quickBtn').onclick = () => toast(fillFrom($('#fQuick').value) ? 'Đã điền, bạn kiểm tra lại rồi chọn ảnh nhé' : 'Không đọc được gì từ nội dung này');
-const shrinkDataUrl = src => new Promise(res => {
+const shrinkDataUrl = (src, maxPx) => new Promise(res => {
   const i = new Image();
-  i.onload = () => { const k = Math.min(1, 700/Math.max(i.width, i.height)), c = document.createElement('canvas');
-    c.width = Math.round(i.width*k); c.height = Math.round(i.height*k); c.getContext('2d').drawImage(i,0,0,c.width,c.height); res(c.toDataURL('image/jpeg',.78)); };
-  i.onerror = () => res('');
+  i.onload = () => { const k = Math.min(1, (maxPx||700)/Math.max(i.width, i.height)), c = document.createElement('canvas');
+    c.width = Math.round(i.width*k); c.height = Math.round(i.height*k); c.getContext('2d').drawImage(i,0,0,c.width,c.height);
+    res({ data: c.toDataURL('image/jpeg',.78), w: i.naturalWidth, h: i.naturalHeight }); };
+  i.onerror = () => res(null);
   i.src = src;
 });
 $('#igBtn').onclick = async () => {
   const url = $('#fIgUrl').value.trim().split('?')[0];
   if(!/^https?:\/\/(www\.)?instagram\.com\//i.test(url)) return toast('Hãy dán link bài viết Instagram');
   const btn = $('#igBtn'); btn.disabled = true; toast('Đang lấy dữ liệu từ Instagram...');
+  let msg = '';
   try{
     const r = await api('ig', {url}, true);
     if(!r.ok) throw new Error(r.error === 'Hành động không hợp lệ' ? 'Apps Script chưa là bản mới (cần Code.gs có hàm lấy link)' : r.error);
     $('#fQuick').value = r.caption || '';
     fillFrom((r.caption || '') + '\n' + url);
     $('#fLink').value = url;
-    if(r.image){ const small = await shrinkDataUrl(r.image); if(small){ imgData = small; $('#prev').src = small; $('#prev').style.display = 'block'; } }
-    toast(r.image ? 'Đã lấy ảnh, tên, giá. Kiểm tra lại rồi lưu nhé' : 'Đã lấy caption, chưa lấy được ảnh. Hãy chọn ảnh tay');
-  }catch(err){ toast('Không lấy được: ' + err.message + '. Hãy dán caption tay nhé'); }
+    if(r.image){
+      const s = await shrinkDataUrl(r.image, 1080);
+      if(s){
+        imgData = s.data; $('#prev').src = s.data; $('#prev').style.display = 'block';
+        msg = r.via === 'og-image-crop'
+          ? 'Instagram chặn bản gốc, tạm dùng ảnh cắt ' + s.w + '×' + s.h + '. Nên tải ảnh gốc lên tay'
+          : 'Đã lấy ảnh gốc ' + s.w + '×' + s.h + 'px, đủ khung hình';
+      }
+    } else msg = 'Không lấy được ảnh';
+  }catch(err){ msg = 'Không lấy được: ' + err.message; }
   btn.disabled = false;
+  toast(msg + '. Kiểm tra lại rồi lưu nhé');
 };
 $('#addBtn').onclick = () => openForm();
 $('#cancel').onclick = () => $('#dlg').close();
