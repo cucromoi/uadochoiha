@@ -3,7 +3,7 @@ const ADMIN_PASSWORD = 'admin123';              // Chỉ dùng khi API_URL để
 const INSTAGRAM_URL  = 'https://www.instagram.com/uadochoiha';   // Đổi thành trang Instagram của shop
 const THREADS_URL    = 'https://www.threads.com/@uadochoiha';     // Đổi thành trang Threads của shop
 const PER_PAGE       = 8;                       // Số sản phẩm mỗi trang
-const API_URL        = 'https://script.google.com/macros/s/AKfycbwk7rG37bPO5h6j8KE0j626zJwgjhn6aGbXt2CwnRnL8ETbgkZF0oqMmrivcjnpq0mw/exec';  // Dán URL Web App của Google Apps Script vào đây. Để trống = lưu trong trình duyệt
+const API_URL        = 'https://script.google.com/macros/s/AKfycbxEsvRnYkZs1QVBHmn4n_yw-VaK6SdlUrvhlAguF66MAJL7AXFV7D48aSQgF8Cf02Zv/exec';  // Dán URL Web App của Google Apps Script vào đây. Để trống = lưu trong trình duyệt
 const STORE_KEY      = 'uadochoiha_products_v1';
 
 const SAMPLE = [
