@@ -156,17 +156,19 @@ function fillFrom(text){
   return Object.keys(r).length > 0;
 }
 $('#quickBtn').onclick = () => toast(fillFrom($('#fQuick').value) ? 'Đã điền, bạn kiểm tra lại rồi chọn ảnh nhé' : 'Không đọc được gì từ nội dung này');
-const shrinkDataUrl = src => new Promise(res => {
+const shrinkDataUrl = (src, maxPx) => new Promise(res => {
   const i = new Image();
-  i.onload = () => { const k = Math.min(1, 700/Math.max(i.width, i.height)), c = document.createElement('canvas');
-    c.width = Math.round(i.width*k); c.height = Math.round(i.height*k); c.getContext('2d').drawImage(i,0,0,c.width,c.height); res(c.toDataURL('image/jpeg',.78)); };
-  i.onerror = () => res('');
+  i.onload = () => { const k = Math.min(1, (maxPx||700)/Math.max(i.width, i.height)), c = document.createElement('canvas');
+    c.width = Math.round(i.width*k); c.height = Math.round(i.height*k); c.getContext('2d').drawImage(i,0,0,c.width,c.height);
+    res({ data: c.toDataURL('image/jpeg',.78), w: i.naturalWidth, h: i.naturalHeight }); };
+  i.onerror = () => res(null);
   i.src = src;
 });
 $('#igBtn').onclick = async () => {
   const url = $('#fIgUrl').value.trim().split('?')[0];
   if(!/^https?:\/\/(www\.)?instagram\.com\//i.test(url)) return toast('Hãy dán link bài viết Instagram');
   const btn = $('#igBtn'); btn.disabled = true; toast('Đang lấy dữ liệu từ Instagram...');
+  let msg = '';
   try{
     const r = await api('ig', {url}, true);
     if(!r.ok) throw new Error(r.error === 'Hành động không hợp lệ' ? 'Apps Script chưa là bản mới (cần Code.gs có hàm lấy link)' : r.error);
@@ -188,6 +190,7 @@ $('#igBtn').onclick = async () => {
     if(blocked) msg = (r.image ? 'Đã lấy được ảnh, nhưng ' : '') + 'caption bị trang đăng nhập che (IP Apps Script đang bị chặn) — chờ 15-30 phút thử lại, hoặc dán caption tay rồi bấm "Tự điền"';
   }catch(err){ msg = 'Không lấy được: ' + err.message; }
   btn.disabled = false;
+  toast(msg + '. Kiểm tra lại rồi lưu nhé');
 };
 $('#addBtn').onclick = () => openForm();
 $('#cancel').onclick = () => $('#dlg').close();
