@@ -5,7 +5,7 @@
 const SHEET_NAME  = 'products';
 const FOLDER_NAME = 'uadochoiha';
 const HEADERS = ['id', 'name', 'price', 'color', 'desc', 'img', 'emoji', 'link'];
-const VERSION = 6; // Mở link /exec trên trình duyệt: thấy "version":2 là đang chạy bản cũ
+const VERSION = 7; // Mở link /exec trên trình duyệt: thấy "version":2 là đang chạy bản cũ
 
 function sheet_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -168,6 +168,7 @@ function igCaption_(code, force) {
   const cache = CacheService.getScriptCache();
   const hit = force ? null : cache.get('igc_' + code);
   if (hit) return { caption: hit, ogImage: '', wall: false };
+  let ogImage = '';
   for (let i = 0; i < IG_UAS.length; i++) {
     try {
       const res = UrlFetchApp.fetch('https://www.instagram.com/p/' + code + '/', {
@@ -176,18 +177,20 @@ function igCaption_(code, force) {
       });
       if (res.getResponseCode() === 200) {
         const html = res.getContentText();
+        // Trang đăng nhập VẪN còn og:image, nên phải giữ nó làm đường lùi cho ảnh dù caption bị loại
+        if (!ogImage) ogImage = meta_(html, 'og:image');
         const desc = meta_(html, 'og:description') || meta_(html, 'description');
         const q = desc.match(/^[^"“]*?(?:likes?|lượt thích|comments?|bình luận)[^"“]*?:\s*["“]([\s\S]*)$/i);
         if (q) {
           const caption = q[1].replace(/["”]\.?\s*$/, '');
           try { cache.put('igc_' + code, caption, 21600); } catch (e) {}
-          return { caption: caption, ogImage: meta_(html, 'og:image'), wall: false };
+          return { caption: caption, ogImage: ogImage, wall: false };
         }
       }
     } catch (e) {}
     if (i < IG_UAS.length - 1) Utilities.sleep(700);
   }
-  return { caption: '', ogImage: '', wall: true };
+  return { caption: '', ogImage: ogImage, wall: true };
 }
 
 function meta_(html, p) {
@@ -206,6 +209,40 @@ function igImage_(u, via) {
     if (r.getResponseCode() !== 200 || !/^image\//.test(ct) || b.length < 2000) return null;
     return { data: 'data:' + ct + ';base64,' + Utilities.base64Encode(b), via: via, bytes: b.length };
   } catch (e) { return null; }
+}
+
+/**
+ * Chạy hàm này trong trình soạn thảo (KHÔNG cần deploy) khi nút "Lấy từ link" không ra ảnh:
+ * chọn igSelfTest ở mũi tên bên cạnh Chạy rồi bấm Chạy, mở Nhật ký để xem Instagram
+ * trả gì cho IP của Google. Dòng nào ra KHÔNG/BỊ TƯỜNG/mã 4xx là thủ phạm.
+ */
+function igSelfTest() {
+  const code = 'DfBgD8VI78Y'; // đổi sang shortcode bài đang thử nếu cần
+  const base = 'https://www.instagram.com/p/' + code;
+  const head = ua => ({ 'User-Agent': ua, 'Accept-Language': 'en-US,en;q=0.9' });
+  let og = '';
+  IG_UAS.forEach(ua => {
+    const r = UrlFetchApp.fetch(base + '/', { muteHttpExceptions: true, followRedirects: true, headers: head(ua) });
+    const html = r.getResponseCode() === 200 ? r.getContentText() : '';
+    const desc = meta_(html, 'og:description') || meta_(html, 'description');
+    if (!og) og = meta_(html, 'og:image');
+    Logger.log('page  ' + r.getResponseCode() + ' html=' + html.length +
+      ' caption=' + (/^[^"“]*?(?:likes?|lượt thích|comments?|bình luận)[^"“]*?:\s*["“]/i.test(desc) ? 'OK' : 'BỊ TƯỜNG') +
+      ' og:image=' + (meta_(html, 'og:image') ? 'CÓ' : 'KHÔNG') + '  [' + ua.split(' ')[0] + ']');
+  });
+  ['l', 'p'].forEach(sz => {
+    const r = UrlFetchApp.fetch(base + '/media/?size=' + sz, { muteHttpExceptions: true, followRedirects: true, headers: head(IG_UAS[0]) });
+    const hs = r.getHeaders();
+    const ct = String(hs['Content-Type'] || hs['content-type'] || '?').split(';')[0];
+    Logger.log('/media/?size=' + sz + ' -> ' + r.getResponseCode() + ' ' + ct +
+      ' bytes=' + (ct.indexOf('image/') === 0 ? r.getContent().length : 0));
+  });
+  if (og) {
+    const r = UrlFetchApp.fetch(og, { muteHttpExceptions: true, followRedirects: true, headers: head(IG_UAS[0]) });
+    const hs = r.getHeaders();
+    Logger.log('og:image -> ' + r.getResponseCode() + ' ' + String(hs['Content-Type'] || hs['content-type'] || '?').split(';')[0] +
+      ' bytes=' + r.getContent().length);
+  } else Logger.log('og:image -> không có trong trang');
 }
 
 /**
