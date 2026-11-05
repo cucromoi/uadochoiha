@@ -5,7 +5,7 @@
 const SHEET_NAME  = 'products';
 const FOLDER_NAME = 'uadochoiha';
 const HEADERS = ['id', 'name', 'price', 'color', 'desc', 'img', 'emoji', 'link'];
-const VERSION = 5; // Mở link /exec trên trình duyệt: thấy "version":2 là đang chạy bản cũ
+const VERSION = 6; // Mở link /exec trên trình duyệt: thấy "version":2 là đang chạy bản cũ
 
 function sheet_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -141,37 +141,65 @@ function decode_(s) {
 function igFetch_(url) {
   const m = String(url).match(/^https:\/\/(www\.)?instagram\.com\/(p|reel)\/([\w-]+)/i);
   if (!m) return { ok: false, error: 'Đây không phải link bài viết Instagram (dạng instagram.com/p/...)' };
-  const code = m[3];
-  const head = { 'User-Agent': 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)', 'Accept-Language': 'vi-VN,vi;q=0.9' };
-  const res = UrlFetchApp.fetch('https://www.instagram.com/p/' + code + '/', {
-    muteHttpExceptions: true, followRedirects: true, headers: head
-  });
-  if (res.getResponseCode() !== 200) return { ok: false, error: 'Instagram trả về mã ' + res.getResponseCode() };
-  const html = res.getContentText();
-  const meta = p => {
-    const h = html.match(new RegExp('<meta[^>]+(?:property|name)="' + p + '"[^>]+content="([^"]*)"', 'i'))
-           || html.match(new RegExp('<meta[^>]+content="([^"]*)"[^>]+(?:property|name)="' + p + '"', 'i'));
-    return h ? decode_(h[1]) : '';
-  };
-  const desc = meta('og:description') || meta('description');
-  const img = meta('og:image');
-  if (!desc && !img) return { ok: false, error: 'Instagram không trả dữ liệu (cần đăng nhập hoặc bài riêng tư)' };
-  // og:description có dạng: 500 likes, 2 comments - tênshop on October 12, 2026: "caption..."
-  // Bỏ phần đầu (số like, comment, ngày) chỉ lấy nội dung trong dấu ngoặc kép
-  let caption = desc;
-  const q = desc.match(/^[^"“]*?(?:likes?|lượt thích|comments?|bình luận)[^"“]*?:\s*["“]([\s\S]*)$/i);
-  if (q) caption = q[1].replace(/["”]\.?\s*$/, '');
-  // /media/?size=l trả đủ khung hình gốc. og:image thì Instagram đã cắt vuông lệch (stp=c239.0.717.717a)
-  // nên ảnh vỡ khung và trông như bị phóng to; chỉ dùng og:image khi Instagram chặn /media/.
-  const got = igImage_('https://www.instagram.com/p/' + code + '/media/?size=l', 'goc', head)
-           || igImage_('https://www.instagram.com/p/' + code + '/media/?size=p', 'goc-p', head)
-           || igImage_(img, 'og-image-crop', head);
-  return { ok: true, caption: caption, image: got ? got.data : '', via: got ? got.via : '', bytes: got ? got.bytes : 0 };
+  const code = m[3], base = 'https://www.instagram.com/p/' + code;
+  // Ảnh lấy trước: /media/ là route riêng, vẫn chạy tốt khi trang HTML bị đẩy về trang đăng nhập
+  let img = igImage_(base + '/media/?size=l', 'goc') || igImage_(base + '/media/?size=p', 'goc-p');
+  let cap = igCaption_(code);
+  // Link CDN của og:image hết hạn sau vài giờ nên không được cache; khi /media/ hỏng mới xin bản tươi.
+  // Chỉ xin lại khi caption lấy được từ cache (cap.wall thì gọi thêm cũng vô ích).
+  if (!img && !cap.ogImage && !cap.wall) cap = igCaption_(code, true);
+  if (!img && cap.ogImage) img = igImage_(cap.ogImage, 'og-image-crop');
+  if (!img && !cap.caption) return { ok: false, error: cap.wall ? IG_WALL : 'Instagram không trả dữ liệu (bài riêng tư hoặc đã xoá)' };
+  return { ok: true, caption: cap.caption, wall: !!cap.wall, image: img ? img.data : '', via: img ? img.via : '', bytes: img ? img.bytes : 0 };
 }
 
-function igImage_(u, via, head) {
+const IG_WALL = 'Instagram đang chặn IP của Apps Script (trả trang đăng nhập). Chờ 15-30 phút thử lại, hoặc tự tải ảnh và dán caption tay.';
+// /media/?size=l trả đủ khung hình gốc. og:image thì Instagram đã cắt vuông lệch (stp=c239.0.717.717a)
+// nên ảnh vỡ khung và trông như bị phóng to; chỉ dùng og:image khi Instagram chặn /media/.
+const IG_UAS = ['facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)',
+                'Googlebot/2.1 (+http://www.google.com/bot.html)'];
+
+/**
+ * Caption thật luôn có dạng "412 likes, 0 comments - tênshop on October 27, 2026: "nội dung...""
+ * nên trang đăng nhập (cũng có og:description, nhưng là chữ "Tạo tài khoản hoặc đăng nhập...")
+ * bị loại bằng chính cái mốc đó thay vì đoán theo từ khóa.
+ */
+function igCaption_(code, force) {
+  const cache = CacheService.getScriptCache();
+  const hit = force ? null : cache.get('igc_' + code);
+  if (hit) return { caption: hit, ogImage: '', wall: false };
+  for (let i = 0; i < IG_UAS.length; i++) {
+    try {
+      const res = UrlFetchApp.fetch('https://www.instagram.com/p/' + code + '/', {
+        muteHttpExceptions: true, followRedirects: true,
+        headers: { 'User-Agent': IG_UAS[i], 'Accept-Language': 'en-US,en;q=0.9' }
+      });
+      if (res.getResponseCode() === 200) {
+        const html = res.getContentText();
+        const desc = meta_(html, 'og:description') || meta_(html, 'description');
+        const q = desc.match(/^[^"“]*?(?:likes?|lượt thích|comments?|bình luận)[^"“]*?:\s*["“]([\s\S]*)$/i);
+        if (q) {
+          const caption = q[1].replace(/["”]\.?\s*$/, '');
+          try { cache.put('igc_' + code, caption, 21600); } catch (e) {}
+          return { caption: caption, ogImage: meta_(html, 'og:image'), wall: false };
+        }
+      }
+    } catch (e) {}
+    if (i < IG_UAS.length - 1) Utilities.sleep(700);
+  }
+  return { caption: '', ogImage: '', wall: true };
+}
+
+function meta_(html, p) {
+  const m = html.match(new RegExp('<meta[^>]+(?:property|name)="' + p + '"[^>]+content="([^"]*)"', 'i'))
+         || html.match(new RegExp('<meta[^>]+content="([^"]*)"[^>]+(?:property|name)="' + p + '"', 'i'));
+  return m ? decode_(m[1]) : '';
+}
+
+function igImage_(u, via) {
   try {
-    const r = UrlFetchApp.fetch(u, { muteHttpExceptions: true, followRedirects: true, headers: head });
+    const r = UrlFetchApp.fetch(u, { muteHttpExceptions: true, followRedirects: true,
+      headers: { 'User-Agent': IG_UAS[0], 'Accept-Language': 'en-US,en;q=0.9' } });
     const hs = r.getHeaders();
     const ct = String(hs['Content-Type'] || hs['content-type'] || '').split(';')[0];
     const b = r.getContent();

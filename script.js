@@ -121,8 +121,11 @@ function openForm(p){
   $('#dlg').showModal();
 }
 /* Điền nhanh từ caption Instagram: lấy tên, giá, mô tả, link */
+const IG_WALL_TXT = /tạo tài khoản hoặc|đăng nhập vào instagram|log ?in ?to instagram|sign ?in ?to instagram|sign ?up for instagram/i;
 function parseCaption(text){
   const out = {};
+  // Khi IP Google bị Instagram chặn, nội dung lấy về là câu của trang đăng nhập, không phải caption
+  if(IG_WALL_TXT.test(text) && !/["“]/.test(text)) return out;
   const url = text.match(/https?:\/\/[^\s]+/);
   if(url) out.link = url[0];
   let t = text.replace(/https?:\/\/[^\s]+/g, '').trim();
@@ -169,8 +172,11 @@ $('#igBtn').onclick = async () => {
   try{
     const r = await api('ig', {url}, true);
     if(!r.ok) throw new Error(r.error === 'Hành động không hợp lệ' ? 'Apps Script chưa là bản mới (cần Code.gs có hàm lấy link)' : r.error);
-    $('#fQuick').value = r.caption || '';
-    fillFrom((r.caption || '') + '\n' + url);
+    // Code.gs v6 báo qua r.wall; bản cũ hơn thì caption là câu của trang đăng nhập
+    const blocked = !!r.wall || IG_WALL_TXT.test(r.caption || '');
+    const caption = blocked ? '' : (r.caption || '');
+    $('#fQuick').value = caption;
+    if(caption) fillFrom(caption + '\n' + url);
     $('#fLink').value = url;
     if(r.image){
       const s = await shrinkDataUrl(r.image, 1080);
@@ -181,6 +187,7 @@ $('#igBtn').onclick = async () => {
           : 'Đã lấy ảnh gốc ' + s.w + '×' + s.h + 'px, đủ khung hình';
       }
     } else msg = 'Không lấy được ảnh';
+    if(blocked) msg = (r.image ? 'Đã lấy được ảnh, nhưng ' : '') + 'caption bị trang đăng nhập che (IP Apps Script đang bị chặn) — chờ 15-30 phút thử lại, hoặc dán caption tay rồi bấm "Tự điền"';
   }catch(err){ msg = 'Không lấy được: ' + err.message; }
   btn.disabled = false;
   toast(msg + '. Kiểm tra lại rồi lưu nhé');
