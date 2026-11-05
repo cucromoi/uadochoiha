@@ -5,7 +5,7 @@
 const SHEET_NAME  = 'products';
 const FOLDER_NAME = 'uadochoiha';
 const HEADERS = ['id', 'name', 'price', 'color', 'desc', 'img', 'emoji', 'link'];
-const VERSION = 7; // Mở link /exec trên trình duyệt: thấy "version":2 là đang chạy bản cũ
+const VERSION = 8; // Mở link /exec trên trình duyệt: thấy "version":2 là đang chạy bản cũ
 
 function sheet_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -145,6 +145,12 @@ function igFetch_(url) {
   // Ảnh lấy trước: /media/ là route riêng, vẫn chạy tốt khi trang HTML bị đẩy về trang đăng nhập
   let img = igImage_(base + '/media/?size=l', 'goc') || igImage_(base + '/media/?size=p', 'goc-p');
   let cap = igCaption_(code);
+  // Trang post bị đẩy về đăng nhập thì vẫn còn route /embed/captioned/ (trang nhúng), caption nằm
+  // thẳng trong <div class="Caption"> và không phải qua og:description nên ít bị chặn hơn.
+  if (!cap.caption) {
+    const emb = igEmbedCaption_(code);
+    if (emb) { cap.caption = emb; cap.wall = false; }
+  }
   // Link CDN của og:image hết hạn sau vài giờ nên không được cache; khi /media/ hỏng mới xin bản tươi.
   // Chỉ xin lại khi caption lấy được từ cache (cap.wall thì gọi thêm cũng vô ích).
   if (!img && !cap.ogImage && !cap.wall) cap = igCaption_(code, true);
@@ -192,6 +198,33 @@ function igCaption_(code, force) {
   }
   return { caption: '', ogImage: ogImage, wall: true };
 }
+
+/**
+ * Route nhúng /embed/captioned/ trả caption nguyên văn trong <div class="Caption">,
+ * không cần parse "N likes, M comments - ..." nên đường này sống được lúc trang post bị tường.
+ */
+function igEmbedCaption_(code) {
+  const cache = CacheService.getScriptCache();
+  const hit = cache.get('ige_' + code);
+  if (hit) return hit;
+  try {
+    const res = UrlFetchApp.fetch('https://www.instagram.com/p/' + code + '/embed/captioned/', {
+      muteHttpExceptions: true, followRedirects: true,
+      headers: { 'User-Agent': IG_UAS[0], 'Accept-Language': 'en-US,en;q=0.9' }
+    });
+    if (res.getResponseCode() !== 200) return '';
+    const m = res.getContentText().match(/class="Caption"[^>]*>(?:<a[^>]*>[\s\S]*?<\/a>)?([\s\S]*?)<\/div>/i);
+    if (!m) return '';
+    const caption = decode_(m[1].replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]*>/g, ''))
+      .replace(/[ \t]+\n/g, '\n').replace(/^\s+|\s+$/g, '').slice(0, 4000);
+    // Trang nhúng bị chặn cũng có div Caption nhưng chỉ chứa chữ mời đăng nhập
+    if (caption.length < 2 || IG_WALL_TXT_.test(caption)) return '';
+    try { cache.put('ige_' + code, caption, 21600); } catch (e) {}
+    return caption;
+  } catch (e) { return ''; }
+}
+
+const IG_WALL_TXT_ = /tạo tài khoản hoặc|đăng nhập để xem|log ?in ?to instagram|sign ?in ?to instagram|sign ?up (?:for instagram|to see)/i;
 
 function meta_(html, p) {
   const m = html.match(new RegExp('<meta[^>]+(?:property|name)="' + p + '"[^>]+content="([^"]*)"', 'i'))
@@ -243,6 +276,11 @@ function igSelfTest() {
     Logger.log('og:image -> ' + r.getResponseCode() + ' ' + String(hs['Content-Type'] || hs['content-type'] || '?').split(';')[0] +
       ' bytes=' + r.getContent().length);
   } else Logger.log('og:image -> không có trong trang');
+  // Đường lùi caption: nếu dòng này ra caption=OK thì bản v8 hết phải dán tay
+  const e = UrlFetchApp.fetch(base + '/embed/captioned/', { muteHttpExceptions: true, followRedirects: true, headers: head(IG_UAS[0]) });
+  const ec = igEmbedCaption_(code);
+  Logger.log('embed/captioned -> ' + e.getResponseCode() + ' html=' + (e.getResponseCode() === 200 ? e.getContentText().length : 0) +
+    ' caption=' + (ec ? 'OK: ' + ec.slice(0, 60).replace(/\n/g, ' / ') : 'BỊ TƯỜNG'));
 }
 
 /**
