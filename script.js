@@ -121,7 +121,7 @@ function openForm(p){
   $('#dlg').showModal();
 }
 /* Điền nhanh từ caption Instagram: lấy tên, giá, mô tả, link */
-const IG_WALL_TXT = /tạo tài khoản hoặc|đăng nhập vào instagram|log ?in ?to instagram|sign ?in ?to instagram|sign ?up for instagram/i;
+const IG_WALL_TXT = /tạo tài khoản hoặc|đăng nhập vào instagram|đăng nhập để xem|log ?in ?to instagram|sign ?in ?to instagram|sign ?up (?:for instagram|to see)/i;
 function parseCaption(text){
   const out = {};
   // Khi IP Google bị Instagram chặn, nội dung lấy về là câu của trang đăng nhập, không phải caption
