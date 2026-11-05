@@ -144,7 +144,9 @@ function parseCaption(text){
   if(desc) out.desc = desc.charAt(0).toUpperCase() + desc.slice(1);
   return out;
 }
+const LOGIN_WALL = /(đăng nhập vào instagram|log in to instagram|create an account or log in|đăng nhập để xem|sign up to see)/i;
 function fillFrom(text){
+  if(LOGIN_WALL.test(text)) return false;
   const r = parseCaption(text);
   if(r.name) $('#fName').value = r.name;
   if(r.price) $('#fPrice').value = r.price;
@@ -153,37 +155,27 @@ function fillFrom(text){
   return Object.keys(r).length > 0;
 }
 $('#quickBtn').onclick = () => toast(fillFrom($('#fQuick').value) ? 'Đã điền, bạn kiểm tra lại rồi chọn ảnh nhé' : 'Không đọc được gì từ nội dung này');
-const shrinkDataUrl = (src, maxPx) => new Promise(res => {
+const shrinkDataUrl = src => new Promise(res => {
   const i = new Image();
-  i.onload = () => { const k = Math.min(1, (maxPx||700)/Math.max(i.width, i.height)), c = document.createElement('canvas');
-    c.width = Math.round(i.width*k); c.height = Math.round(i.height*k); c.getContext('2d').drawImage(i,0,0,c.width,c.height);
-    res({ data: c.toDataURL('image/jpeg',.78), w: i.naturalWidth, h: i.naturalHeight }); };
-  i.onerror = () => res(null);
+  i.onload = () => { const k = Math.min(1, 700/Math.max(i.width, i.height)), c = document.createElement('canvas');
+    c.width = Math.round(i.width*k); c.height = Math.round(i.height*k); c.getContext('2d').drawImage(i,0,0,c.width,c.height); res(c.toDataURL('image/jpeg',.78)); };
+  i.onerror = () => res('');
   i.src = src;
 });
 $('#igBtn').onclick = async () => {
   const url = $('#fIgUrl').value.trim().split('?')[0];
   if(!/^https?:\/\/(www\.)?instagram\.com\//i.test(url)) return toast('Hãy dán link bài viết Instagram');
   const btn = $('#igBtn'); btn.disabled = true; toast('Đang lấy dữ liệu từ Instagram...');
-  let msg = '';
   try{
     const r = await api('ig', {url}, true);
     if(!r.ok) throw new Error(r.error === 'Hành động không hợp lệ' ? 'Apps Script chưa là bản mới (cần Code.gs có hàm lấy link)' : r.error);
     $('#fQuick').value = r.caption || '';
-    fillFrom((r.caption || '') + '\n' + url);
+    if(r.caption) fillFrom(r.caption + '\n' + url);
     $('#fLink').value = url;
-    if(r.image){
-      const s = await shrinkDataUrl(r.image, 1080);
-      if(s){
-        imgData = s.data; $('#prev').src = s.data; $('#prev').style.display = 'block';
-        msg = r.via === 'og-image-crop'
-          ? 'Instagram chặn bản gốc, tạm dùng ảnh cắt ' + s.w + '×' + s.h + '. Nên tải ảnh gốc lên tay'
-          : 'Đã lấy ảnh gốc ' + s.w + '×' + s.h + 'px, đủ khung hình';
-      }
-    } else msg = 'Không lấy được ảnh';
-  }catch(err){ msg = 'Không lấy được: ' + err.message; }
+    if(r.image){ const small = await shrinkDataUrl(r.image); if(small){ imgData = small; $('#prev').src = small; $('#prev').style.display = 'block'; } }
+    toast(!r.caption ? 'Instagram đòi đăng nhập nên chỉ lấy được ảnh. Hãy dán caption tay vào ô bên dưới nhé' : r.image ? 'Đã lấy ảnh, tên, giá. Kiểm tra lại rồi lưu nhé' : 'Đã lấy caption, chưa lấy được ảnh. Hãy chọn ảnh tay');
+  }catch(err){ toast('Không lấy được: ' + err.message + '. Hãy dán caption tay nhé'); }
   btn.disabled = false;
-  toast(msg + '. Kiểm tra lại rồi lưu nhé');
 };
 $('#addBtn').onclick = () => openForm();
 $('#cancel').onclick = () => $('#dlg').close();
