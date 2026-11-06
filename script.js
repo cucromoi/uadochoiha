@@ -7,21 +7,29 @@ const API_URL        = 'https://script.google.com/macros/s/AKfycbx6MHi1WtpljvuJd
 const STORE_KEY      = 'uadochoiha_products_v1';
 // Dấu shop ghi tay trong tên/mô tả khi không còn nhận món đó
 const OFF_RE = /hàng off|\[off|off\]|đã bán|sold ?out|ngừng nhận/i;
-// Pattern viết KHÔNG dấu vì catOf bỏ dấu trước khi so; thứ tự quan trọng, mỗi món vào nhóm đầu tiên khớp.
-// Đo trên 406 sản phẩm thật: 89% vào nhóm, 11% rơi vào "Khác" (lịch, ô dù, bao tay,...)
+// Danh mục suy từ 6 từ ĐẦU của tên món hàng, không đọc mô tả: mô tả toàn "phụ phí", "giá đã ff"
+// và tên nhân vật (kitty/usagi) chen lung, bản regex cũ bỏ dấu nên "cho" trong "dành cho bé"
+// thành "chó" -> 115 món bị nhét vào Thú bông.
+// Từ nào khớp TRÁI NHẤT thắng; cùng vị trí thì cụm dài hơn thắng ("hộp bút" trước "bút").
+// Viết CÓ DẤU vì "bìa" khác "bia", "kệ" khác "xe". Đo lại trên 406 món: 13 nhóm, chỉ 1 món vào "Khác".
 const CATS = [
-  ['Thú bông', /gau|thu bong|plush|bear|\bmeo\b|\bcho\b|\bheo\b|\btho\b|\bech\b|\bvit\b|ngong|\bcuu\b|nhim|pingu|chiikawa|usagi|capybara|dino/],
-  ['Balo & túi', /balo|ba lo|pouch|\btui\b|\bvi\b|\bbop\b|tote|crossbag|\bbag\b|dai that|that lung/],
-  ['Cốc & bình', /\bcoc\b|\bly\b|binh|\bnoi\b|\bdia\b|muong|ong hut|\bca\b|\bbat\b/],
-  ['Văn phòng phẩm', /\bbut\b|\bsot\b|giay|note|highlight|\bbia\b|sticky|papercraft|thuoc ta|kep giay|pen case|pencil/],
-  ['Sticker & nailbox', /sticker|decal|masking|nail|\bdan\b|\bstk\b|\bcuon\b/],
-  ['Phụ kiện tóc', /kep toc|cang cua|cot toc|day buoc toc|\bbom\b|luoc|kem toc/],
-  ['Phụ kiện điện thoại', /\bcase\b|op lung|gia do|dien thoai|laptop|airpods|\bde\b|chan sac|day sac|sac du phong/],
-  ['Móc khóa & charm', /moc khoa|charm|keychain|lanyard|day treo|\bmoc\b/],
-  ['Đèn & gối', /\bden\b|\bngu\b|\bgoi\b|\bchan\b|\blot\b|nem/],
-  ['Đồ chơi & mô hình', /mo hinh|lego|xep hinh|bup be|figure|doll|\bquat\b|ghep hinh|do choi|tro choi|squishy|fidget|\bke\b/],
-  ['Vớ & phụ kiện', /\bvo\b|\btat\b|\bdep\b|\bnon\b|\bmu\b|khau trang|guong|\bkep\b|\bday\b|\bvong\b|khan|gang tay|boc|phukien|accessor|phu kien/]
+  ['Thú bông', ['gấu bông', 'thú bông', 'cục bông', 'plush', 'chó rách', 'chó rán', 'bông', 'gấu']],
+  ['Balo & túi', ['balo', 'ba lô', 'tote', 'pouch', 'itabag', 'crossbag', 'ví cầm', 'ví gập', 'ví đựng', 'ví', 'bóp', 'thắt lưng', 'dây thắt', 'dây rút', 'túi']],
+  ['Phụ kiện điện thoại', ['case', 'ốp lưng', 'ốp', 'giá đỡ', 'chân sạc', 'dây sạc', 'sạc dự phòng', 'airpods', 'iphone', 'ipad', 'laptop', 'máy tính', 'miếng dán màn hình', 'lót chuột', 'gáy điện thoại', 'đế']],
+  ['Móc khóa & charm', ['móc khóa', 'móc khoá', 'keychains', 'keychain', 'charm', 'lanyard', 'bùa treo', 'badge', 'huy hiệu']],
+  ['Sticker & decal', ['sticker', 'decal', 'stk', 'nailbox', 'masking', 'washitape', 'băng dính']],
+  ['Văn phòng phẩm', ['bóp viết', 'hộp bút', 'túi bút', 'cây viết', 'viết', 'bút', 'chì', 'thước', 'dập ghim', 'kẹp giấy', 'sổ', 'vở', 'note', 'bìa', 'folder', 'binder', 'lịch', 'schedule', 'bookmark', 'thiệp', 'postcard', 'polaroid', 'card', 'name tag', 'băng keo', 'con dấu', 'giấy', 'bảng']],
+  ['Phụ kiện tóc', ['kẹp tóc', 'cài tóc', 'kẹo tóc', 'quấn tóc', 'băng đô', 'lược', 'dây buộc tóc', 'kẹp càng cua', 'kẹp gắp', 'miếng dán giữ nếp tóc', 'kẹp mai', 'kẹp tăm', 'bờm']],
+  ['Đèn & gối & nệm', ['đèn', 'gối ôm', 'gối kê', 'gối', 'nệm', 'chăn', 'đệm', 'bịt mắt', 'lót ghế']],
+  ['Cốc & bình & bàn ăn', ['cốc', 'ly', 'lót ly', 'bình', 'nồi', 'đĩa', 'dĩa', 'muỗng', 'ống hút', 'bento', 'hộp cơm', 'thìa', 'khay', 'ấm', 'chén', 'bát']],
+  ['Đồ chơi & mô hình', ['mô hình', 'lego', 'xếp hình', 'búp bê', 'figure', 'doll', 'squishy', 'fidget', 'lắp ráp', 'standee', 'puzzle', 'blindbox', 'blind box', 'tượng', 'gậy chỉ', 'gậy chiến', 'bài uno', 'bài tarot', 'bộ bài', 'đồ chơi', 'phao bơi', 'outfit', 'bóng bay', 'đầu bếp', 'bánh danisa', 'roleplay']],
+  ['Quần áo & mang', ['vớ', 'tất', 'quần', 'áo thun', 'áo dây', 'áo', 'dép', 'giày', 'nón', 'mũ', 'tạp dề', 'bikini', 'áo khoác', 'váy', 'gang tay', 'bao tay', 'khăn tắm', 'khăn mặt', 'khăn choàng', 'khăn quàng', 'khăn lông', 'áo len', 'belt']],
+  ['Trang sức & làm đẹp', ['dây chuyền', 'vòng cổ', 'khuyên tai', 'nhẫn', 'lắc chân', 'son', 'phấn mắt', 'má hồng', 'makeup', 'mascara', 'kẻ mắt', 'nước hoa', 'gương', 'kính mát', 'kính', 'choker', 'bông tai', 'bấm móng', 'kềm']],
+  ['Nhà cửa & decor', ['khăn trải bàn', 'thảm', 'kệ', 'giường', 'thùng rác', 'hộp đựng', 'rổ', 'chậu', 'bồn tắm', 'đồng hồ', 'ô', 'chặn góc', 'nhang muỗi', 'ống heo', 'quạt']]
 ];
+// Tên kiểu "chiikawa gõ mõ", "usagi ngái ngủ" không có danh từ chỉ loại -> figure/thú bông của nhà đó
+const CAT_CHARS = ['chiikawa', 'hachiware', 'usagi', 'rilakkuma', 'korilakkuma', 'miffy', 'melody', 'kitty', 'pompompurin', 'cinnamoroll', 'snoopy', 'sumikko', 'hamtaro', 'pingu', 'momonga', 'aiko', 'kuromi', 'pochacco'];
+const CAT_PREFIX_DROP = ['hàng off', 'chính hãng', 'tổng hợp', 'gom', 'error', 'restock', 'sale', 'new', 'only'];
 
 const SAMPLE = [
  {id:1,name:'Gấu bông Bunny tai dài',price:129000,desc:'Thỏ bông mềm mịn, ôm êm, cao 30cm. Quà tặng siêu dễ thương.',img:'',emoji:'🐰'},
@@ -48,7 +56,31 @@ let cat = '';
 
 /* ===== GIÚP HIỂN THỊ ===== */
 const isOff = p => OFF_RE.test((p.name || '') + ' ' + (p.desc || ''));
-const catOf = p => { const t = norm(p.name + ' ' + p.desc); return (CATS.find(c => c[1].test(t)) || ['Khác'])[0]; };
+// Bỏ emoji + dấu câu, giữ nguyên dấu tiếng Việt để "chó" không nhầm với "cho"
+const plain = s => String(s || '').toLowerCase()
+  .replace(/[\p{Extended_Pictographic}\u200d\ufe0f]/gu, ' ')
+  .replace(/[^0-9a-zàáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđ\s]/g, ' ')
+  .replace(/\s+/g, ' ').trim();
+const catWords = s => {
+  let w = plain(s).split(' ');
+  while (w.length && CAT_PREFIX_DROP.includes(w[0])) w = w.slice(1);
+  return w.slice(0, 6).join(' ');
+};
+// Sắp xếp theo độ dài giảm dần để cụm 2 từ được xét trước từ đơn của nó ở cùng vị trí
+const CAT_KW = CATS.flatMap(([c, ws]) => ws.map(w => ({ w, c }))).sort((a, b) => b.w.length - a.w.length);
+const CAT_RE = new RegExp(CAT_KW.map((k, i) => '(?<k' + i + '>(?:^|\\s)' + k.w + '(?=\\s|$))').join('|'), 'u');
+const CAT_CHAR_RE = new RegExp('(?:^|\\s)(?:' + CAT_CHARS.join('|') + ')(?=\\s|$)', 'u');
+const catMemo = new Map();
+function catOf(p) {
+  const key = p.id + '|' + p.name;
+  let c = catMemo.get(key);
+  if (c !== undefined) return c;
+  const h = catWords(p.name), m = h.match(CAT_RE);
+  c = m ? CAT_KW[+Object.keys(m.groups).find(k => m.groups[k]).slice(1)].c
+    : (CAT_CHAR_RE.test(h) ? 'Thú bông' : 'Khác');
+  catMemo.set(key, c);
+  return c;
+}
 // Thẻ chỉ rộng ~230-260px nên gọi bản 400px của Drive (đo: w800 = 47KB, w400 = 26KB)
 const thumb = (u, w) => String(u || '').replace(/sz=w\d+/, 'sz=w' + w);
 
