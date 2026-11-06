@@ -158,9 +158,7 @@ dialog form{display:grid;gap:10px}
 .cats button[aria-current=true]{background:var(--sky);border-color:var(--sky);color:#12304a}
 .cats i{font-style:normal;opacity:.65;margin-left:5px;font-size:12px}
 @media(max-width:760px){.tb-brand{font-size:20px}
-/* 13 chip mà xếp hàng thì chiếm 6 hàng và cuộn 741px mới tới, nên cho trôi ngang + dán dưới thanh logo để bấm được mọi lúc */
-.cats-wrap{position:sticky;top:var(--tb,62px);z-index:29;background:var(--bg2);border-bottom:1px solid var(--line);margin:0 -18px;padding:0 18px}
-.cats-wrap::after{content:'';position:absolute;top:0;right:0;bottom:1px;width:38px;pointer-events:none;background:linear-gradient(90deg,transparent,var(--bg2))}
-.cats{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;scroll-snap-type:x proximity;margin:0 0 10px;padding:9px 0 11px}
-.cats::-webkit-scrollbar{display:none}
-.cats button{flex:none;scroll-snap-align:start;min-height:40px;font-size:14px;padding:8px 14px}}
+/* 14 danh mục, nhãn dài tới 19 ký tự: xếp lưới 2 cột để thấy hết và bấm được ngay, không phải kéo ngang */
+.cats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 12px}
+.cats button{display:flex;align-items:center;justify-content:center;min-height:44px;border-radius:14px;padding:6px 9px;font-size:13px;white-space:nowrap}
+.cats button span{overflow:hidden;text-overflow:ellipsis;min-width:0}}

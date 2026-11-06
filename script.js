@@ -127,7 +127,7 @@ function filtered(){
 }
 function renderCats(){
   const n = {}; products.forEach(p => n[catOf(p)] = (n[catOf(p)] || 0) + 1);
-  const chip = (v, name) => `<button data-cat="${esc(v)}" ${cat===v?'aria-current="true"':''}>${esc(name)}<i>${v ? n[name] : products.length}</i></button>`;
+  const chip = (v, name) => `<button data-cat="${esc(v)}" ${cat===v?'aria-current="true"':''}><span>${esc(name)}</span><i>${v ? n[name] : products.length}</i></button>`;
   $('#cats').innerHTML = chip('', 'Tất cả')
     + CATS.filter(c => n[c[0]]).map(c => chip(c[0], c[0])).join('')
     + (n['Khác'] ? chip('Khác', 'Khác') : '');
@@ -380,10 +380,4 @@ $('#igRow').hidden = !API_URL;
 const loadMsgs = ['Đang gọi hàng về cho bạn...', 'Chờ xíu nhen 🫧', 'Đang thổi bong bóng nè...', 'Sắp xong rồi nè ☘️'];
 let loadIdx = 0;
 const loadTimer = setInterval(() => { const m = $('#loadMsg'); if(!m) return clearInterval(loadTimer); m.textContent = loadMsgs[++loadIdx % loadMsgs.length]; }, 1700);
-// Dãy danh mục dính (mobile) phải nằm sát dưới topbar, mà chiều cao topbar đổi theo font và theo
-// việc có ô tìm kiếm hay không, nên lấy số đo thật thay vì hardcode một con số.
-const setTb = () => { const t = $('.topbar'); if (t) document.documentElement.style.setProperty('--tb', t.offsetHeight + 'px'); };
-addEventListener('resize', setTb);
-setTb();
-if (document.fonts) document.fonts.ready.then(setTb);
 load().then(() => { renderCats(); render(); jsonLd(); });
