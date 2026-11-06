@@ -14,11 +14,13 @@ const OFF_RE = /hàng off|\[off|off\]|đã bán|sold ?out|ngừng nhận/i;
 // Viết CÓ DẤU vì "bìa" khác "bia", "kệ" khác "xe". Đo lại trên 406 món: 13 nhóm, chỉ 1 món vào "Khác".
 const CATS = [
   ['Thú bông', ['gấu bông', 'thú bông', 'cục bông', 'plush', 'chó rách', 'chó rán', 'bông', 'gấu']],
-  ['Balo & túi', ['balo', 'ba lô', 'tote', 'pouch', 'itabag', 'crossbag', 'ví cầm', 'ví gập', 'ví đựng', 'ví', 'bóp', 'thắt lưng', 'dây thắt', 'dây rút', 'túi']],
+  ['Balo & túi', ['balo', 'ba lô', 'tote', 'pouch', 'itabag', 'crossbag', 'card holder', 'ví cầm', 'ví gập', 'ví đựng', 'ví', 'bóp', 'thắt lưng', 'dây thắt', 'dây rút', 'túi']],
   ['Phụ kiện điện thoại', ['case', 'ốp lưng', 'ốp', 'giá đỡ', 'chân sạc', 'dây sạc', 'sạc dự phòng', 'airpods', 'iphone', 'ipad', 'laptop', 'máy tính', 'miếng dán màn hình', 'lót chuột', 'gáy điện thoại', 'đế']],
   ['Móc khóa & charm', ['móc khóa', 'móc khoá', 'keychains', 'keychain', 'charm', 'lanyard', 'bùa treo', 'badge', 'huy hiệu']],
   ['Sticker & decal', ['sticker', 'decal', 'stk', 'nailbox', 'masking', 'washitape', 'băng dính']],
-  ['Văn phòng phẩm', ['bóp viết', 'hộp bút', 'túi bút', 'cây viết', 'viết', 'bút', 'chì', 'thước', 'dập ghim', 'kẹp giấy', 'sổ', 'vở', 'note', 'bìa', 'folder', 'binder', 'lịch', 'schedule', 'bookmark', 'thiệp', 'postcard', 'polaroid', 'card', 'name tag', 'băng keo', 'con dấu', 'giấy', 'bảng']],
+  ['Văn phòng phẩm', ['bóp viết', 'hộp bút', 'túi bút', 'cây viết', 'viết', 'bút', 'chì', 'thước', 'dập ghim', 'kẹp giấy', 'sổ', 'vở', 'note', 'bìa', 'folder', 'binder', 'lịch', 'schedule', 'bookmark', 'thiệp', 'postcard', 'polaroid', 'card', 'name tag', 'băng keo', 'con dấu', 'giấy', 'bảng',
+    // để dành cho đợt hàng văn phòng phẩm sau này (406 món hiện tại chưa món nào khớp, thêm không làm đổi nhóm món cũ)
+    'bút máy', 'bút bi', 'bút lông', 'bút nhớ dòng', 'bút xóa', 'highlighter', 'paperclip', 'kẹp bướm', 'kẹp còng', 'sổ còng', 'sổ tay', 'planner', 'journal', 'bìa kiếng', 'bìa lỗ', 'file', 'name card', 'stamp', 'mực', 'gôm', 'tẩy', 'compa', 'keo', 'thước kẻ']],
   ['Phụ kiện tóc', ['kẹp tóc', 'cài tóc', 'kẹo tóc', 'quấn tóc', 'băng đô', 'lược', 'dây buộc tóc', 'kẹp càng cua', 'kẹp gắp', 'miếng dán giữ nếp tóc', 'kẹp mai', 'kẹp tăm', 'bờm']],
   ['Đèn & gối & nệm', ['đèn', 'gối ôm', 'gối kê', 'gối', 'nệm', 'chăn', 'đệm', 'bịt mắt', 'lót ghế']],
   ['Cốc & bình & bàn ăn', ['cốc', 'ly', 'lót ly', 'bình', 'nồi', 'đĩa', 'dĩa', 'muỗng', 'ống hút', 'bento', 'hộp cơm', 'thìa', 'khay', 'ấm', 'chén', 'bát']],
