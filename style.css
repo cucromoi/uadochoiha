@@ -8,6 +8,7 @@ body{margin:0;font-family:var(--font);font-weight:400;font-synthesis:none;color:
 background-image:radial-gradient(circle at 12% 0%,rgba(143,214,245,.2),transparent 38%),radial-gradient(circle at 92% 28%,rgba(255,168,197,.14),transparent 36%),radial-gradient(rgba(143,214,245,.13) 1.2px,transparent 1.2px);
 background-size:auto,auto,24px 24px;background-attachment:fixed,fixed,scroll}
 h1,h2,h3{font-family:var(--font);font-weight:400;margin:0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .wrap{max-width:1120px;margin:0 auto;padding:0 18px}
 
 /* Đầu trang theo kiểu trang cá nhân Instagram */
@@ -31,8 +32,6 @@ button.contact{font:inherit;border:0;cursor:pointer}
 
 /* Tìm kiếm */
 .filters{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin:18px 0;display:grid;gap:12px;grid-template-columns:1fr 1fr 1.4fr}
-.filters>.fq{grid-column:1/-1}
-.filters>.fq input{border-radius:999px;padding:11px 18px}
 .filters label,dialog label{font-size:13px;color:var(--sky);display:block;margin-bottom:4px}
 input,select,textarea{width:100%;font:inherit;color:var(--ink);padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg2)}
 input:focus,select:focus,textarea:focus{border-color:var(--sky);outline:none}
@@ -153,6 +152,8 @@ dialog form{display:grid;gap:10px}
 .topbar{position:sticky;top:0;z-index:30;background:rgba(44,55,83,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
 .tb{display:flex;align-items:center;gap:12px;padding:10px 18px}
 .tb-brand{font-size:24px;color:var(--ink);text-decoration:none;white-space:nowrap}
+.tb-search{flex:1;min-width:0}
+.tb-search input{border-radius:999px;padding:9px 16px}
 
 .cats{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
 .cats button{font:400 13px var(--font);color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:7px 15px;cursor:pointer;transition:background .2s,color .2s,border-color .2s}
@@ -161,7 +162,7 @@ dialog form{display:grid;gap:10px}
 .cats i{font-style:normal;opacity:.65;margin-left:5px;font-size:12px}
 @media(max-width:760px){.tb-brand{font-size:20px}
 /* 13 chip mà xếp hàng thì chiếm 6 hàng và cuộn 741px mới tới, nên cho trôi ngang + dán dưới thanh logo để bấm được mọi lúc */
-.cats-wrap{position:sticky;top:49px;z-index:29;background:var(--bg2);border-bottom:1px solid var(--line);margin:0 -18px;padding:0 18px}
+.cats-wrap{position:sticky;top:var(--tb,62px);z-index:29;background:var(--bg2);border-bottom:1px solid var(--line);margin:0 -18px;padding:0 18px}
 .cats-wrap::after{content:'';position:absolute;top:0;right:0;bottom:1px;width:38px;pointer-events:none;background:linear-gradient(90deg,transparent,var(--bg2))}
 .cats{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;scroll-snap-type:x proximity;margin:0 0 10px;padding:9px 0 11px}
 .cats::-webkit-scrollbar{display:none}
