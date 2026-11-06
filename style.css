@@ -160,7 +160,9 @@ dialog form{display:grid;gap:10px}
 .cats button[aria-current=true]{background:var(--sky);border-color:var(--sky);color:#12304a}
 .cats i{font-style:normal;opacity:.65;margin-left:5px;font-size:12px}
 @media(max-width:760px){.tb-brand{font-size:20px}
-/* 13 chip mà để xuống dòng thì chiếm hết 6 hàng trên màn hình dọc, nên cho trôi ngang */
-.cats{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+/* 13 chip mà xếp hàng thì chiếm 6 hàng và cuộn 741px mới tới, nên cho trôi ngang + dán dưới thanh logo để bấm được mọi lúc */
+.cats-wrap{position:sticky;top:49px;z-index:29;background:var(--bg2);border-bottom:1px solid var(--line);margin:0 -18px;padding:0 18px}
+.cats-wrap::after{content:'';position:absolute;top:0;right:0;bottom:1px;width:38px;pointer-events:none;background:linear-gradient(90deg,transparent,var(--bg2))}
+.cats{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;scroll-snap-type:x proximity;margin:0 0 10px;padding:9px 0 11px}
 .cats::-webkit-scrollbar{display:none}
-.cats button{flex:none}}
+.cats button{flex:none;scroll-snap-align:start;min-height:40px;font-size:14px;padding:8px 14px}}
