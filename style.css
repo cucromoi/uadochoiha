@@ -1,13 +1,13 @@
 @font-face{font-family:'CookieRun';src:url('SRN_CookieRun_Regular.ttf') format('truetype');font-weight:400;font-display:swap}
-:root{--font:CookieRun,Nunito,system-ui,sans-serif;--ui:Nunito,system-ui,-apple-system,sans-serif;color-scheme:dark;
+:root{--font:CookieRun,Nunito,system-ui,sans-serif;color-scheme:dark;
 --bg:#36425f;--bg2:#2c3753;--card:#43507a;--card2:#51608b;--line:#6679a8;
 --ink:#eef3fc;--mute:#b4c0dc;--sky:#8fd6f5;--pink:#ffa8c5;--iris:#5b63f5;--irisd:#4249d6}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;font-family:var(--ui);font-weight:400;color:var(--ink);background-color:var(--bg);
+body{margin:0;font-family:var(--font);font-weight:400;font-synthesis:none;color:var(--ink);background-color:var(--bg);
 background-image:radial-gradient(circle at 12% 0%,rgba(143,214,245,.2),transparent 38%),radial-gradient(circle at 92% 28%,rgba(255,168,197,.14),transparent 36%),radial-gradient(rgba(143,214,245,.13) 1.2px,transparent 1.2px);
 background-size:auto,auto,24px 24px;background-attachment:fixed,fixed,scroll}
-h1,h2,h3{font-family:var(--ui);font-weight:700;margin:0}
+h1,h2,h3{font-family:var(--font);font-weight:400;margin:0}
 .wrap{max-width:1120px;margin:0 auto;padding:0 18px}
 
 /* Đầu trang theo kiểu trang cá nhân Instagram */
@@ -18,11 +18,11 @@ background:conic-gradient(from 210deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5,#f
 .avatar:hover{transform:rotate(-8deg) scale(1.05)}
 .avatar img{display:block;width:100%;height:100%;border-radius:50%;border:4px solid var(--bg2);object-fit:cover}
 .who{flex:1;min-width:260px;display:grid;gap:6px}
-.logo{font-family:var(--font);font-size:clamp(30px,5vw,44px);line-height:1.1}
+.logo{font-size:clamp(30px,5vw,44px);line-height:1.1}
 .kind{margin:0;color:var(--mute);font-size:15px}
 .bio{list-style:none;margin:2px 0 6px;padding:0;display:grid;gap:3px;font-size:15px;line-height:1.4}
 .contacts{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
-.contact{background:var(--iris);color:#fff;font-weight:700;font-size:15px;text-decoration:none;padding:10px 22px;border-radius:10px;transition:transform .12s,background .2s}
+.contact{background:var(--iris);color:#fff;font-size:15px;text-decoration:none;padding:10px 22px;border-radius:12px;transition:transform .12s,background .2s}
 .contact.alt{background:var(--card2)}
 button.contact{font:inherit;border:0;cursor:pointer}
 .contact:hover{background:var(--irisd)}
@@ -33,12 +33,12 @@ button.contact{font:inherit;border:0;cursor:pointer}
 .filters{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin:18px 0;display:grid;gap:12px;grid-template-columns:1fr 1fr 1.4fr}
 .filters>.fq{grid-column:1/-1}
 .filters>.fq input{border-radius:999px;padding:11px 18px}
-.filters label,dialog label{font-size:12px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;color:var(--mute);display:block;margin-bottom:4px}
+.filters label,dialog label{font-size:13px;color:var(--sky);display:block;margin-bottom:4px}
 input,select,textarea{width:100%;font:inherit;color:var(--ink);padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg2)}
 input:focus,select:focus,textarea:focus{border-color:var(--sky);outline:none}
 ::placeholder{color:#8794b5}
 .bar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
-.btn{font:700 14px var(--ui);border:0;border-radius:10px;padding:10px 18px;cursor:pointer;background:var(--sky);color:#12304a}
+.btn{font:400 14px var(--font);border:0;border-radius:12px;padding:9px 18px;cursor:pointer;background:var(--sky);color:#12304a}
 .btn.p{background:var(--iris);color:#fff}
 .btn.g{background:var(--card2);color:var(--ink)}
 .btn:disabled{opacity:.5;cursor:default}
@@ -51,9 +51,9 @@ background:var(--card);border:1px solid var(--line);border-radius:16px;box-shado
 .pic{aspect-ratio:1;background:linear-gradient(#a6defa,#dff4fc);display:grid;place-items:center;font-size:84px;overflow:hidden}
 .pic img{width:100%;height:100%;object-fit:cover}
 .info{padding:12px 14px 14px;display:flex;flex-direction:column;gap:6px;flex:1}
-.info h3{font-size:17px;line-height:1.3;font-weight:700;min-height:2.6em;
+.info h3{font-size:19px;line-height:1.2;min-height:2.4em;
 display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.price{font:800 20px var(--ui);color:var(--pink);letter-spacing:-.01em}
+.price{font:400 20px var(--font);color:var(--pink)}
 .desc{font-size:14px;margin:0;color:#d5def2;line-height:1.45;min-height:4.35em;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .more{align-self:center;color:var(--sky);font-size:13px;text-decoration:none;border-bottom:1px dashed var(--sky);white-space:nowrap}
 .more:hover{color:var(--pink);border-color:var(--pink)}
@@ -76,7 +76,7 @@ background:conic-gradient(from 210deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5,#f
 @keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-10px)}}
 .empty{grid-column:1/-1;text-align:center;padding:40px 10px;background:var(--card);border-radius:22px;color:var(--mute)}
 .pager{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:26px 0 40px}
-.pager button{min-width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--card);font:600 14px var(--ui);color:var(--sky);cursor:pointer}
+.pager button{min-width:40px;height:40px;border-radius:50%;border:2px solid var(--line);background:var(--card);font:400 14px var(--font);color:var(--sky);cursor:pointer}
 .pager button[aria-current=true]{background:var(--pink);border-color:var(--pink);color:#2b2d45}
 .pager button:disabled{opacity:.4;cursor:default}
 footer{background:var(--bg2);border-top:1px solid var(--line);margin-top:20px;color:var(--mute);font-size:14px}
@@ -85,7 +85,7 @@ footer button{background:none;border:0;color:var(--sky);font:inherit;text-decora
 .ft-brand{display:flex;gap:14px;align-items:center}
 .mini-av{flex:none;width:58px;height:58px;border-radius:50%;padding:3px;background:conic-gradient(from 210deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5,#feda75)}
 .mini-av img{display:block;width:100%;height:100%;border-radius:50%;border:3px solid var(--bg2)}
-.ft-name{display:block;font-family:var(--font);font-size:22px;color:var(--ink)}
+.ft-name{display:block;font-size:22px;color:var(--ink)}
 .ft-brand p,.ft-col p{margin:0}
 .ft h3{font-size:15px;color:var(--sky);margin-bottom:8px}
 .ft-col{display:grid;gap:6px;align-content:start}
@@ -141,7 +141,7 @@ dialog form{display:grid;gap:10px}
 .btn,.pager button{transition:transform .12s}
 .btn:active,.contact:active,.pager button:active{transform:translateY(3px) scale(.96)}
 .contact:hover,.btn:hover{transform:translateY(-2px)}
-.fx-toggle{position:fixed;right:14px;bottom:14px;z-index:40;font:600 13px var(--ui);padding:9px 16px;border-radius:999px;border:1px solid var(--card2);background:var(--iris);color:#fff;cursor:pointer}
+.fx-toggle{position:fixed;right:14px;bottom:14px;z-index:40;font:400 14px var(--font);padding:9px 16px;border-radius:999px;border:3px solid var(--card2);background:var(--iris);color:#fff;cursor:pointer}
 .fx-toggle[aria-pressed=false]{background:var(--card);color:var(--mute);border-color:var(--line)}
 .fx-toggle:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
 /* Tắt hiệu ứng: do nút bật/tắt hoặc cài đặt "giảm chuyển động" của thiết bị (effects.js gắn class fx-off) */
@@ -152,10 +152,10 @@ dialog form{display:grid;gap:10px}
 /* ===== Thanh dính + danh mục ===== */
 .topbar{position:sticky;top:0;z-index:30;background:rgba(44,55,83,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
 .tb{display:flex;align-items:center;gap:12px;padding:10px 18px}
-.tb-brand{font-family:var(--font);font-size:24px;color:var(--ink);text-decoration:none;white-space:nowrap}
+.tb-brand{font-size:24px;color:var(--ink);text-decoration:none;white-space:nowrap}
 
 .cats{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
-.cats button{font:600 13px var(--ui);color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:7px 15px;cursor:pointer;transition:background .2s,color .2s,border-color .2s}
+.cats button{font:400 13px var(--font);color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:7px 15px;cursor:pointer;transition:background .2s,color .2s,border-color .2s}
 .cats button:hover{border-color:var(--sky)}
 .cats button[aria-current=true]{background:var(--sky);border-color:var(--sky);color:#12304a}
 .cats i{font-style:normal;opacity:.65;margin-left:5px;font-size:12px}
