@@ -57,7 +57,7 @@ Quy tắc đang chạy:
 4. Tên chỉ có nhân vật (`chiikawa gõ mõ`, `usagi ngái ngủ`) → Thú bông; không khớp gì → Khác.
 5. Thứ tự từ trong mảng **không** quan trọng, bộ máy tự sắp theo độ dài giảm dần. Chỉ khi hai từ bằng độ dài và cùng khớp ở một vị trí thì nhóm ghi trước thắng.
 
-Số liệu trên 406 món thật (13 nhóm, 229 từ khoá trong đó 102 từ đang thực sự khớp, 1 món "Khác" là bản ghi lỗi `#ERROR!`):
+Số liệu trên 406 món thật — 13 nhóm, 229 từ khoá: 121 từ thắng ít nhất một món, 16 từ luôn bị từ dài hơn che, 92 từ chưa từng khớp (phần lớn là từ để dành), 10 món đi nhờ tên nhân vật, 1 món "Khác" là bản ghi lỗi `#ERROR!`:
 
 | Nhóm | Món | Từ đang thực sự gánh |
 |---|---|---|
