@@ -2,9 +2,33 @@
 const ADMIN_PASSWORD = 'admin123';              // Chỉ dùng khi API_URL để trống. Khi dùng Google, mật khẩu đặt trong Apps Script
 const INSTAGRAM_URL  = 'https://www.instagram.com/uadochoiha';   // Đổi thành trang Instagram của shop
 const THREADS_URL    = 'https://www.threads.com/@uadochoiha';     // Đổi thành trang Threads của shop
-const PER_PAGE       = 8;                       // Số sản phẩm mỗi trang
+const PER_PAGE       = 12;                      // Số sản phẩm mỗi trang
 const API_URL        = 'https://script.google.com/macros/s/AKfycbx6MHi1WtpljvuJdGSi6LdmTej8wSMFKyGSXMexoo6fnuHrmin8fU4w9SrJHR1qmf4o/exec';  // Dán URL Web App của Google Apps Script vào đây. Để trống = lưu trong trình duyệt
 const STORE_KEY      = 'uadochoiha_products_v1';
+const CART_KEY       = 'uadochoiha_cart_v1';
+
+// Instagram/Threads không nhận prefill nội dung chat nên đơn luôn được copy vào clipboard trước khi mở chat
+const ORDER_CHATS = [
+  {label:'Instagram', url:'https://ig.me/m/uadochoiha'},
+  {label:'Threads',   url:'https://www.threads.com/@uadochoiha'}
+];
+// Dấu shop ghi tay trong tên/mô tả khi không còn nhận món đó
+const OFF_RE = /hàng off|\[off|off\]|đã bán|sold ?out|ngừng nhận/i;
+// Pattern viết KHÔNG dấu vì catOf bỏ dấu trước khi so; thứ tự quan trọng, mỗi món vào nhóm đầu tiên khớp.
+// Đo trên 406 sản phẩm thật: 89% vào nhóm, 11% rơi vào "Khác" (lịch, ô dù, bao tay,...)
+const CATS = [
+  ['Thú bông', /gau|thu bong|plush|bear|\bmeo\b|\bcho\b|\bheo\b|\btho\b|\bech\b|\bvit\b|ngong|\bcuu\b|nhim|pingu|chiikawa|usagi|capybara|dino/],
+  ['Balo & túi', /balo|ba lo|pouch|\btui\b|\bvi\b|\bbop\b|tote|crossbag|\bbag\b|dai that|that lung/],
+  ['Cốc & bình', /\bcoc\b|\bly\b|binh|\bnoi\b|\bdia\b|muong|ong hut|\bca\b|\bbat\b/],
+  ['Văn phòng phẩm', /\bbut\b|\bsot\b|giay|note|highlight|\bbia\b|sticky|papercraft|thuoc ta|kep giay|pen case|pencil/],
+  ['Sticker & nailbox', /sticker|decal|masking|nail|\bdan\b|\bstk\b|\bcuon\b/],
+  ['Phụ kiện tóc', /kep toc|cang cua|cot toc|day buoc toc|\bbom\b|luoc|kem toc/],
+  ['Phụ kiện điện thoại', /\bcase\b|op lung|gia do|dien thoai|laptop|airpods|\bde\b|chan sac|day sac|sac du phong/],
+  ['Móc khóa & charm', /moc khoa|charm|keychain|lanyard|day treo|\bmoc\b/],
+  ['Đèn & gối', /\bden\b|\bngu\b|\bgoi\b|\bchan\b|\blot\b|nem/],
+  ['Đồ chơi & mô hình', /mo hinh|lego|xep hinh|bup be|figure|doll|\bquat\b|ghep hinh|do choi|tro choi|squishy|fidget|\bke\b/],
+  ['Vớ & phụ kiện', /\bvo\b|\btat\b|\bdep\b|\bnon\b|\bmu\b|khau trang|guong|\bkep\b|\bday\b|\bvong\b|khan|gang tay|boc|phukien|accessor|phu kien/]
+];
 
 const SAMPLE = [
  {id:1,name:'Gấu bông Bunny tai dài',price:129000,desc:'Thỏ bông mềm mịn, ôm êm, cao 30cm. Quà tặng siêu dễ thương.',img:'',emoji:'🐰'},
@@ -27,6 +51,13 @@ const esc = s => String(s??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;'
 function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2200)}
 
 let products = [], admin = sessionStorage.getItem('tbx_admin') === '1', page = 1, editId = null, imgData = '';
+let cart = [], cat = '', detailId = null, detailQty = 1;
+
+/* ===== GIÚP HIỂN THỊ ===== */
+const isOff = p => OFF_RE.test((p.name || '') + ' ' + (p.desc || ''));
+const catOf = p => { const t = norm(p.name + ' ' + p.desc); return (CATS.find(c => c[1].test(t)) || ['Khác'])[0]; };
+// Thẻ chỉ rộng ~230-260px nên gọi bản 400px của Drive (đo: w800 = 47KB, w400 = 26KB)
+const thumb = (u, w) => String(u || '').replace(/sz=w\d+/, 'sz=w' + w);
 
 let PW = sessionStorage.getItem('tbx_pw') || '';
 let apiVersion = 0;
@@ -58,6 +89,7 @@ function filtered(){
   const toks = norm($('#q').value.trim()).split(/\s+/).filter(Boolean), mn = parseFloat($('#min').value), mx = parseFloat($('#max').value);
   let list = products.filter(p =>
     toks.every(t => (norm(p.name) + ' ' + norm(p.desc)).includes(t)) &&
+    (!cat || catOf(p) === cat) &&
     (isNaN(mn) || p.price >= mn) && (isNaN(mx) || p.price <= mx));
   const s = $('#sort').value;
   if(s==='asc') list.sort((a,b)=>a.price-b.price);
@@ -66,23 +98,33 @@ function filtered(){
   else list.sort((a,b)=>b.id-a.id);
   return list;
 }
+function renderCats(){
+  const n = {}; products.forEach(p => n[catOf(p)] = (n[catOf(p)] || 0) + 1);
+  const order = [['', 'Tất cả (' + products.length + ')'], ...CATS.filter(c => n[c[0]]).map(c => [c[0], c[0] + ' (' + n[c[0]] + ')'])];
+  if(n['Khác']) order.push(['Khác', 'Khác (' + n['Khác'] + ')']);
+  $('#cats').innerHTML = order.map(([v,label]) =>
+    `<button data-cat="${esc(v)}" ${cat===v?'aria-current="true"':''}>${esc(label)}</button>`).join('');
+}
 function render(){
   const list = filtered(), pages = Math.max(1, Math.ceil(list.length/PER_PAGE));
   if(page > pages) page = pages;
   const slice = list.slice((page-1)*PER_PAGE, page*PER_PAGE);
-  $('#count').textContent = list.length + ' món đáng yêu';
+  $('#count').textContent = list.length + ' sản phẩm' + (cat ? ' · ' + cat : '');
   $('#grid').innerHTML = slice.length ? slice.map(p => `
    <article class="card">
-    <div class="pic">${p.img ? `<img src="${esc(p.img)}" alt="${esc(p.name)}" loading="lazy">` : esc(p.emoji||'🧸')}</div>
+    <button class="pic" data-open="${p.id}" aria-label="Xem chi tiết ${esc(p.name)}">${p.img ? `<img src="${esc(thumb(p.img,400))}" alt="${esc(p.name)}" loading="lazy">` : esc(p.emoji||'🧸')}</button>
     <div class="info">
-     <h3>${esc(p.name)}</h3>
+     <h3><button data-open="${p.id}">${esc(p.name)}</button></h3>
      <p class="desc">${esc(p.desc)}</p>
      <div class="price">${vnd(p.price)}</div>
-     ${safeUrl(p.link) ? `<a class="more" href="${esc(safeUrl(p.link))}" target="_blank" rel="noopener noreferrer">Xem bài viết</a>` : ''}
+     <div class="row">
+      <button class="btn p" data-buy="${p.id}" ${isOff(p)?'disabled':''}>${isOff(p)?'Ngừng nhận order':'Thêm vào giỏ'}</button>
+      ${safeUrl(p.link) ? `<a class="more" href="${esc(safeUrl(p.link))}" target="_blank" rel="noopener noreferrer">Bài gốc</a>` : ''}
+     </div>
      ${admin ? `<div class="row"><button class="btn" data-edit="${p.id}">Sửa</button><button class="btn g" data-del="${p.id}">Xóa</button></div>` : ''}
     </div>
    </article>`).join('')
-   : '<div class="empty">Chưa có món nào khớp. Thử đổi từ khóa, khoảng giá hoặc màu khác nhé!</div>';
+   : '<div class="empty">Chưa có món nào khớp. Thử đổi từ khóa, khoảng giá hoặc danh mục khác nhé!</div>';
   const b = [`<button ${page===1?'disabled':''} data-pg="${page-1}" aria-label="Trang trước">‹</button>`];
   for(let i=1;i<=pages;i++) if(pages<=7 || i===1 || i===pages || Math.abs(i-page)<=1)
     b.push(`<button data-pg="${i}" ${i===page?'aria-current="true"':''}>${i}</button>`);
@@ -90,11 +132,13 @@ function render(){
   b.push(`<button ${page===pages?'disabled':''} data-pg="${page+1}" aria-label="Trang sau">›</button>`);
   $('#pager').innerHTML = pages>1 ? b.join('') : '';
   $('#adminBar').hidden = !admin;
+  cartBadge();
 }
 
 /* ===== SỰ KIỆN ===== */
 ['q','min','max','sort'].forEach(id => $('#'+id).addEventListener('input', () => {page=1;render()}));
-$('#reset').onclick = () => {['q','min','max'].forEach(i=>$('#'+i).value='');$('#sort').value='new';page=1;render()};
+$('#reset').onclick = () => {['q','min','max'].forEach(i=>$('#'+i).value='');$('#sort').value='new';cat='';page=1;renderCats();render()};
+$('#cats').onclick = e => {const b=e.target.closest('[data-cat]'); if(b){cat=b.dataset.cat;page=1;renderCats();render()}};
 $('#pager').onclick = e => {const b=e.target.closest('[data-pg]'); if(b&&!b.disabled){page=+b.dataset.pg;render();scrollTo({top:$('#grid').offsetTop-120})}};
 
 
@@ -235,6 +279,9 @@ $('#form').onsubmit = async e => {
   if(stale) alert(OLD_MSG); else toast('Đã lưu sản phẩm');
 };
 $('#grid').onclick = async e => {
+  const op = e.target.closest('[data-open]'), by = e.target.closest('[data-buy]');
+  if(op) return openDetail(+op.dataset.open);
+  if(by) return cartAdd(+by.dataset.buy, 1);
   const ed = e.target.closest('[data-edit]'), dl = e.target.closest('[data-del]');
   if(ed) openForm(products.find(p=>p.id===+ed.dataset.edit));
   if(dl && confirm('Xóa sản phẩm này?')){
@@ -243,6 +290,107 @@ $('#grid').onclick = async e => {
     products = products.filter(p=>p.id!==id); save(); render(); toast('Đã xóa');
   }
 };
+
+/* ===== GIỎ HÀNG + ĐƠN HÀNG ===== */
+function loadCart(){ try{ const c = JSON.parse(localStorage.getItem(CART_KEY)); return Array.isArray(c) ? c : []; }catch(e){ return [] } }
+function saveCart(){ try{ localStorage.setItem(CART_KEY, JSON.stringify(cart)); }catch(e){} }
+function cartBadge(){ const n = cart.reduce((s,i)=>s+i.qty,0); $('#cartCount').hidden = !n; $('#cartCount').textContent = n; }
+function cartAdd(id, qty){
+  const p = products.find(x=>x.id===id); if(!p) return;
+  const it = cart.find(x=>x.id===id);
+  if(it) it.qty = Math.min(99, it.qty + qty); else cart.push({id:p.id, name:p.name, price:p.price, img:p.img, qty});
+  saveCart(); cartBadge(); toast('Đã thêm vào giỏ: ' + p.name);
+}
+function cartRender(){
+  cart = cart.filter(i => products.some(p => p.id === i.id));
+  $('#cdList').innerHTML = cart.map(i => `
+   <div class="cd-item">
+    ${i.img ? `<img src="${esc(thumb(i.img,200))}" alt="">` : '<span class="cd-em">🧸</span>'}
+    <div class="cd-t"><b>${esc(i.name)}</b><span>${vnd(i.price)} / món</span></div>
+    <div class="cd-r">
+     <div class="cd-mini"><button type="button" data-dec="${i.id}" aria-label="Giảm số lượng">−</button><span>${i.qty}</span><button type="button" data-inc="${i.id}" aria-label="Tăng số lượng">+</button></div>
+     <span class="p">${vnd(i.price*i.qty)}</span>
+     <button type="button" class="btn g" data-rm="${i.id}">Bỏ</button>
+    </div>
+   </div>`).join('');
+  const total = cart.reduce((s,i)=>s+i.price*i.qty, 0);
+  $('#cdEmpty').hidden = cart.length > 0;
+  $('#cdForm').hidden = cart.length === 0;
+  $('#cdTotal').textContent = vnd(total);
+  saveCart(); cartBadge();
+}
+function orderText(){
+  const l = ['Đơn uadochoiha:', ''];
+  cart.forEach(i => l.push(`• ${i.name} — SL ${i.qty} — ${vnd(i.price*i.qty)}`));
+  l.push('', 'Tạm tính: ' + vnd(cart.reduce((s,i)=>s+i.price*i.qty, 0)), '');
+  l.push('Tên: ' + ($('#oName').value.trim() || '(chưa điền)'));
+  l.push('SĐT: ' + ($('#oPhone').value.trim() || '(chưa điền)'));
+  l.push('Địa chỉ: ' + ($('#oAddr').value.trim() || '(chưa điền)'));
+  const note = $('#oNote').value.trim(); if(note) l.push('Ghi chú: ' + note);
+  l.push('', 'Giá chưa gồm phụ phí, shop báo phụ phí trước khi chốt đơn.');
+  return l.join('\n');
+}
+async function copyText(txt){
+  try{ await navigator.clipboard.writeText(txt); return true; }
+  catch(e){
+    const t = document.createElement('textarea'); t.value = txt; t.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(t); t.select();
+    let ok = false; try{ ok = document.execCommand('copy'); }catch(_){}
+    t.remove(); return ok;
+  }
+}
+$('#cdList').onclick = e => {
+  const b = e.target.closest('button'); if(!b) return;
+  const it = cart.find(x => x.id === +b.dataset.dec || x.id === +b.dataset.inc || x.id === +b.dataset.rm);
+  if(!it) return;
+  if(b.dataset.inc) it.qty = Math.min(99, it.qty + 1);
+  else if(b.dataset.dec) it.qty -= 1;
+  if(b.dataset.rm || it.qty < 1) cart = cart.filter(x => x.id !== it.id);
+  cartRender();
+};
+$('#cartBtn').onclick = () => { cartRender(); $('#cdlg').showModal(); };
+$('#cdClose').onclick = () => $('#cdlg').close();
+$('#cdClear').onclick = () => { if(confirm('Xóa hết giỏ hàng?')){ cart = []; cartRender(); } };
+$('#cdSend').onclick = async () => {
+  if(!cart.length) return;
+  const txt = orderText(), ok = await copyText(txt);
+  window.open(ORDER_CHATS[0].url, '_blank', 'noopener');
+  if(ok) toast('Đơn đã được sao chép — dán vào khung chat là xong');
+  else prompt('Không sao chép tự động được, bạn copy nội dung đơn này:', txt);
+};
+
+/* ===== CHI TIẾT SẢN PHẨM ===== */
+function openDetail(id){
+  const p = products.find(x => x.id === id); if(!p) return;
+  detailId = id; detailQty = 1;
+  $('#pdName').textContent = p.name;
+  $('#pdPrice').textContent = vnd(p.price);
+  $('#pdDesc').textContent = p.desc || 'Món này shop không ghi thêm mô tả. Nhắn shop để hỏi size, màu và tình trạng còn nhận order hay không.';
+  $('#pdPic').innerHTML = p.img ? `<img src="${esc(thumb(p.img,800))}" alt="${esc(p.name)}">` : esc(p.emoji || '🧸');
+  $('#pdQty').textContent = detailQty;
+  const u = safeUrl(p.link); $('#pdLink').hidden = !u; if(u) $('#pdLink').href = u;
+  const off = isOff(p); $('#pdAdd').disabled = off; $('#pdAdd').textContent = off ? 'Món này đã ngừng nhận' : 'Thêm vào giỏ';
+  $('#pdlg').showModal();
+}
+$('#pdClose').onclick = () => $('#pdlg').close();
+$('#pdMinus').onclick = () => { detailQty = Math.max(1, detailQty - 1); $('#pdQty').textContent = detailQty; };
+$('#pdPlus').onclick = () => { detailQty = Math.min(99, detailQty + 1); $('#pdQty').textContent = detailQty; };
+$('#pdAdd').onclick = () => { cartAdd(detailId, detailQty); $('#pdlg').close(); };
+
+/* Dữ liệu có cấu trúc để Google và mạng xã hội đọc ra giá + tình trạng từng món */
+function jsonLd(){
+  const s = document.createElement('script'); s.type = 'application/ld+json';
+  s.textContent = JSON.stringify({
+    '@context': 'https://schema.org', '@type': 'ItemList', name: 'uadochoiha – sản phẩm đang bán',
+    itemListElement: products.slice(0, 60).map((p, i) => ({
+      '@type': 'ListItem', position: i + 1, name: p.name, description: p.desc || '',
+      url: location.href, image: p.img ? thumb(p.img, 800) : undefined,
+      offers: {'@type': 'Offer', price: p.price, priceCurrency: 'VND',
+        availability: isOff(p) ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock'}
+    }))
+  });
+  document.head.appendChild(s);
+}
 $('#expBtn').onclick = () => {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([JSON.stringify(products,null,1)],{type:'application/json'}));
@@ -298,4 +446,6 @@ $('#igRow').hidden = !API_URL;
 const loadMsgs = ['Đang gọi hàng về cho bạn...', 'Chờ xíu nhen 🫧', 'Đang thổi bong bóng nè...', 'Sắp xong rồi nè ☘️'];
 let loadIdx = 0;
 const loadTimer = setInterval(() => { const m = $('#loadMsg'); if(!m) return clearInterval(loadTimer); m.textContent = loadMsgs[++loadIdx % loadMsgs.length]; }, 1700);
-load().then(render);
+cart = loadCart();
+$('#cdTh').href = THREADS_URL;
+load().then(() => { renderCats(); render(); jsonLd(); });

@@ -3,11 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>uadochoiha – cửa hàng đồ chơi</title>
+<title>uadochoiha – shop đồ chơi order nội địa Trung</title>
+<meta name="description" content="uadochoiha bán gấu bông, đèn ngủ, phụ kiện và đồ chơi order Taobao – 1688 – Pindoudou. Ảnh thật từng món, giá niêm yết, đặt hàng trong 30 giây. Ship toàn quốc từ HCM.">
+<link rel="canonical" href="https://cucromoi.github.io/uadochoiha/">
 <meta name="theme-color" content="#36425f">
+<meta name="og:type" content="website">
+<meta name="og:site_name" content="uadochoiha">
+<meta name="og:title" content="uadochoiha – shop đồ chơi order nội địa Trung">
+<meta name="og:description" content="Gấu bông, đèn ngủ, phụ kiện order Taobao – 1688 – Pindoudou. Ảnh thật từng món, giá niêm yết, đặt hàng trong 30 giây.">
+<meta name="og:url" content="https://cucromoi.github.io/uadochoiha/">
+<meta name="og:image" content="https://cucromoi.github.io/uadochoiha/avatar.png">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/png" href="avatar.png">
+<link rel="apple-touch-icon" href="avatar.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -20,11 +31,20 @@
  <input type="file" id="impFile" accept="application/json" hidden>
 </div></div>
 
-<header><div class="wrap top">
+<div class="topbar"><div class="wrap tb">
+ <a class="tb-brand" href="#top">uadochoiha</a>
+ <div class="tb-search">
+  <label class="sr" for="q">Tìm sản phẩm</label>
+  <input id="q" type="search" placeholder="Tìm gấu bông, đèn ngủ, kẹp tóc..." autocomplete="off">
+ </div>
+ <button type="button" class="btn cart" id="cartBtn">🧺 Giỏ hàng<span class="cart-n" id="cartCount" hidden>0</span></button>
+</div></div>
+
+<header id="top"><div class="wrap top">
  <div class="avatar"><img src="avatar.png" alt="Ảnh đại diện uadochoiha" width="256" height="256"></div>
  <div class="who">
   <div class="logo">uadochoiha</div>
-  <p class="kind">Cửa hàng đồ chơi</p>
+  <p class="kind">Cửa hàng đồ chơi order nội địa Trung</p>
   <ul class="bio">
    <li>☘️ ORDER taobao, 1688, pindoudou,...</li>
    <li>🫧 có nhận tìm đồ theo link/ảnh</li>
@@ -39,12 +59,19 @@
 </div></header>
 
 <main class="wrap">
- <section class="filters" aria-label="Tìm kiếm sản phẩm">
-  <div><label for="q">Tìm theo tên hoặc mô tả</label><input id="q" type="search" placeholder="Ví dụ: gấu bông, cốc, kẹp tóc..."></div>
+ <section class="trust" aria-label="Cam kết của shop">
+  <div><b>Ảnh thật từng món</b><span>Kèm bài viết Instagram gốc</span></div>
+  <div><b>Giá niêm yết</b><span>Chưa gồm phụ phí, báo trước khi chốt</span></div>
+  <div><b>Hàng về 2–3 tuần</b><span>Báo ngày đóng gom mỗi tuần</span></div>
+  <div><b>Chỉ chuyển khoản</b><span>Không nhận COD</span></div>
+ </section>
+
+ <section class="filters" aria-label="Lọc sản phẩm">
   <div><label for="min">Giá từ (đ)</label><input id="min" type="number" min="0" step="1000" placeholder="0"></div>
   <div><label for="max">Giá đến (đ)</label><input id="max" type="number" min="0" step="1000" placeholder="Không giới hạn"></div>
   <div><label for="sort">Sắp xếp</label><select id="sort"><option value="new">Mới nhất</option><option value="asc">Giá tăng dần</option><option value="desc">Giá giảm dần</option><option value="name">Tên A–Z</option></select></div>
  </section>
+ <nav class="cats" id="cats" aria-label="Danh mục"></nav>
  <div class="bar"><h2 id="count">Đang tải...</h2><button class="btn g" id="reset">Xóa bộ lọc</button></div>
  <section class="grid" id="grid" aria-live="polite">
   <div class="loader" role="status">
@@ -54,18 +81,28 @@
   </div>
  </section>
  <nav class="pager" id="pager" aria-label="Phân trang"></nav>
+
+ <section class="faq" aria-labelledby="faqH">
+  <h2 id="faqH">Câu hỏi thường gặp</h2>
+  <details><summary>Đặt hàng thế nào?</summary><p>Bấm <b>Thêm vào giỏ</b> trên mỗi món, điền tên – số điện thoại – địa chỉ, rồi bấm <b>Sao chép đơn &amp; nhắn tin</b>. Nội dung đơn đã soạn sẵn, bạn chỉ cần dán vào khung chat của shop.</p></details>
+  <details><summary>Giá đã chốt chưa, phụ phí là gì?</summary><p>Giá niêm yết chưa gồm phụ phí (ship nội địa Trung nếu có + cân Trung–Việt). Shop báo số phụ phí trước khi bạn chốt đơn, không thu thêm sau khi đã chuyển khoản.</p></details>
+  <details><summary>Bao lâu thì hàng về?</summary><p>Tính từ ngày đóng gom (shop báo mỗi tuần) thường mất 2–3 tuần. Hàng kẹt biên hoặc chậm hải quan sẽ được cập nhật trực tiếp, không giục được.</p></details>
+  <details><summary>Đổi trả ra sao?</summary><p>Hàng order không đổi trả vì chọn sai size/màu, và có thể lệch sample ở chi tiết nhỏ. Khi nhận hàng bạn quay video mở hộp rõ các góc — đó là điều kiện để shop xử lý khiếu nại.</p></details>
+  <details><summary>Hủy đơn có hoàn tiền không?</summary><p>Đơn đã chốt hoặc cọc mà hủy ngang thì không hoàn tiền, vì shop đã chuyển tiền cho nguồn.</p></details>
+ </section>
 </main>
 
 <footer>
  <div class="wrap ft">
   <div class="ft-brand">
    <span class="mini-av"><img src="avatar.png" alt="" width="58" height="58"></span>
-   <div><span class="ft-name">uadochoiha</span><p>Cửa hàng đồ chơi</p></div>
+   <div><span class="ft-name">uadochoiha</span><p>Cửa hàng đồ chơi order nội địa Trung</p></div>
   </div>
   <div class="ft-col">
    <h3>Liên hệ</h3>
    <a id="ftIg" href="#" target="_blank" rel="noopener">Instagram</a>
    <a id="ftTh" href="#" target="_blank" rel="noopener">Threads</a>
+   <p>Trả lời 9:00 – 22:00 mỗi ngày</p>
   </div>
   <div class="ft-col">
    <h3>Đặt hàng</h3>
@@ -94,6 +131,49 @@
  </ol>
  <p class="thanks">Còn thắc mắc gì thêm mọi người cứ thoải mái hỏi mình nhen, cảm ơn bạn đã tin tưởng uadochoiha 🍀</p>
  <div style="text-align:center"><button type="button" class="btn p" id="noteClose">Mình đã đọc</button></div>
+</dialog>
+
+<dialog id="pdlg" class="detail" aria-labelledby="pdName">
+ <button type="button" class="x" id="pdClose" aria-label="Đóng">✕</button>
+ <div class="pd-body">
+  <div class="pd-pic" id="pdPic"></div>
+  <div class="pd-info">
+   <h2 id="pdName"></h2>
+   <p class="pd-price" id="pdPrice"></p>
+   <p class="pd-desc" id="pdDesc"></p>
+   <div class="pd-qty">
+    <button type="button" class="qbtn" id="pdMinus" aria-label="Giảm số lượng">−</button>
+    <output id="pdQty">1</output>
+    <button type="button" class="qbtn" id="pdPlus" aria-label="Tăng số lượng">+</button>
+   </div>
+   <div class="pd-actions">
+    <button type="button" class="btn p" id="pdAdd">Thêm vào giỏ</button>
+    <a class="btn g" id="pdLink" href="#" target="_blank" rel="noopener noreferrer">Xem bài viết gốc</a>
+   </div>
+   <p class="pd-note">Giá chưa gồm phụ phí — shop báo phụ phí trước khi chốt đơn.</p>
+  </div>
+ </div>
+</dialog>
+
+<dialog id="cdlg" class="cart-dlg" aria-labelledby="cdTitle">
+ <button type="button" class="x" id="cdClose" aria-label="Đóng">✕</button>
+ <h2 id="cdTitle">Giỏ hàng của bạn</h2>
+ <div id="cdList" class="cd-list"></div>
+ <p class="cd-empty" id="cdEmpty">Giỏ đang trống. Bấm "Thêm vào giỏ" trên món bạn thích nhé.</p>
+ <div id="cdForm" hidden>
+  <div class="cd-total">Tạm tính <b id="cdTotal"></b></div>
+  <div class="cd-fields">
+   <div><label for="oName">Họ tên</label><input id="oName" autocomplete="name" placeholder="Tên của bạn"></div>
+   <div><label for="oPhone">Số điện thoại</label><input id="oPhone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="0901 234 567"></div>
+   <div class="full"><label for="oAddr">Địa chỉ nhận hàng</label><input id="oAddr" autocomplete="street-address" placeholder="Số nhà, đường, quận/huyện, tỉnh/thành"></div>
+   <div class="full"><label for="oNote">Ghi chú (không bắt buộc)</label><input id="oNote" placeholder="Ví dụ: giao giờ hành chính"></div>
+  </div>
+  <div class="cd-actions">
+   <button type="button" class="btn p" id="cdSend">Sao chép đơn &amp; nhắn tin</button>
+   <button type="button" class="btn g" id="cdClear">Xóa giỏ</button>
+  </div>
+  <p class="cd-tip">Đơn sẽ được sao chép vào clipboard, chat Instagram mở ngay sau đó — bạn chỉ cần dán. Không dùng Instagram? <a href="#" id="cdTh">Nhắn Threads</a> thay cũng được.</p>
+ </div>
 </dialog>
 
 <dialog id="dlg">

@@ -34,7 +34,7 @@
   const box = document.createElement('div');
   box.className = 'floaties'; box.setAttribute('aria-hidden', 'true');
   const em = ['🫧', '✨', '🫧', '💗', '☁️', '🫧', '🐾', '☘️', '⭐'];
-  const n = innerWidth < 700 ? 8 : 14;
+  const n = innerWidth < 700 ? 4 : 7;
   for (let i = 0; i < n; i++) {
     const s = document.createElement('span');
     s.textContent = em[i % em.length];
@@ -71,7 +71,8 @@
     spawn(e.clientX, e.clientY, marks[Math.random() * marks.length | 0], (Math.random() - .5) * 30, 20 + Math.random() * 20);
   });
   document.addEventListener('click', e => {
-    if (!on || !e.target.closest('.card') || e.target.closest('button')) return;
+    const card = e.target.closest('.card');
+    if (!on || !card || e.target.closest('[data-edit],[data-del]')) return;
     for (let i = 0; i < 7; i++) {
       const a = (Math.PI * 2 * i) / 7;
       spawn(e.clientX, e.clientY, '💗', Math.cos(a) * 60, Math.sin(a) * 60);
