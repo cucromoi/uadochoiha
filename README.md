@@ -19,7 +19,7 @@ Website cửa hàng đồ chơi — trang giới thiệu, tìm kiếm và đặt
 
 - HTML, CSS, JavaScript thuần — không framework, không build step
 - Google Apps Script Web App (tùy chọn) làm backend lưu trữ
-- Font và logo tùy chỉnh đi kèm trong repo
+- Font và logo tùy chỉnh đi kèm trong repo — trang tải bản woff2 68KB đã cắt riêng bộ tiếng Việt, không phải file 6,7MB
 
 ## Cấu trúc repo
 
@@ -30,7 +30,9 @@ uadochoiha/
 ├── script.js     # Logic: sản phẩm, tìm kiếm, phân trang, admin, lưu trữ
 ├── effects.js    # Hiệu ứng hình ảnh (confetti, sparkle, ...)
 ├── logo          # Hình logo
-└── font          # Font tùy chỉnh
+├── SRN_CookieRun_Regular.ttf  # font gốc 6,7MB (12.558 glyph, chứa cả bộ Hangul+CJK) — chỉ để làm nguồn
+├── CookieRun-VN.woff2         # 543 glyph Latin+tiếng Việt, 68KB — file trang thật tải, có preload trong <head>
+└── font-subset.py             # cắt lại font gốc thành woff2 trên khi đổi font
 ```
 
 ## Cấu hình

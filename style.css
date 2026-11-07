@@ -1,4 +1,5 @@
-@font-face{font-family:'CookieRun';src:url('SRN_CookieRun_Regular.ttf') format('truetype');font-weight:400;font-display:swap}
+/* CookieRun-VN.woff2 = SRN_CookieRun_Regular.ttf cắt còn 543 glyph Latin + tiếng Việt (68KB thay vì 6,7MB) */
+@font-face{font-family:'CookieRun';src:url('CookieRun-VN.woff2') format('woff2');font-weight:400;font-display:swap}
 :root{--font:CookieRun,Nunito,system-ui,sans-serif;color-scheme:dark;
 --bg:#36425f;--bg2:#2c3753;--card:#43507a;--card2:#51608b;--line:#6679a8;
 --ink:#eef3fc;--mute:#b4c0dc;--sky:#8fd6f5;--pink:#ffa8c5;--iris:#5b63f5;--irisd:#4249d6}
