@@ -212,9 +212,9 @@ function render(){
   $('#count').textContent = list.length + ' sản phẩm' + (cat ? ' · ' + cat : '');
   $('#grid').innerHTML = slice.length ? slice.map(p => `
    <article class="card">
-    <div class="pic">${p.img ? `<img src="${esc(thumb(p.img,400))}" alt="${esc(p.name)}" loading="lazy">` : esc(p.emoji||'🧸')}</div>
+    <a class="pic-link" href="p/${p.id}.html" aria-label="${esc(p.name)}"><div class="pic">${p.img ? `<img src="${esc(thumb(p.img,400))}" alt="${esc(p.name)}" loading="lazy">` : esc(p.emoji||'🧸')}</div></a>
     <div class="info">
-     <h3 title="${esc(p.name)}">${hl(p.name, toks)}</h3>
+     <h3 title="${esc(p.name)}"><a href="p/${p.id}.html">${hl(p.name, toks)}</a></h3>
      <p class="desc">${hl(p.desc, toks)}</p>
      <div class="price">${vnd(p.price)}</div>
      ${safeUrl(p.link) ? `<a class="more" href="${esc(safeUrl(p.link))}" target="_blank" rel="noopener noreferrer">Xem bài viết</a>` : ''}
