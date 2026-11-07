@@ -6,8 +6,8 @@ Website cửa hàng đồ chơi — trang giới thiệu, tìm kiếm và đặt
 
 ## Tính năng
 
-- **Danh sách sản phẩm** — tên, giá, mô tả, ảnh (hoặc emoji đại diện), link bài viết
-- **Tìm kiếm & lọc** — tìm theo tên/mô tả (không phân biệt dấu tiếng Việt), lọc theo khoảng giá, sắp xếp theo giá / tên / thời gian
+- **Danh sách sản phẩm** — tên, giá, mô tả, ảnh (hoặc emoji đại diện), link bài viết. Ảnh Drive hiện dần từ mờ sang rõ, ô danh mục vẽ ngay từ bản lưu ở trình duyệt nên vào trang là thấy hàng, không chờ ~2s gọi Google
+- **Tìm kiếm & lọc** — tìm theo tên/mô tả (không phân biệt dấu tiếng Việt), bôi đậm đúng chỗ khớp trong tên và mô tả, gợi ý từ gần giống khi không tìm ra món nào, lọc theo khoảng giá, sắp xếp theo giá / tên / thời gian
 - **Phân trang** — 12 sản phẩm mỗi trang
 - **Upload ảnh** — tự nén qua Canvas (tối đa 700px, JPEG ~78%) và lưu dạng Base64
 - **Chế độ quản trị** — đăng nhập mật khẩu để thêm / sửa / xóa sản phẩm

@@ -97,25 +97,44 @@ async function api(action, data = {}, post = false){
     : await fetch(API_URL + '?action=' + action);
   return r.json();
 }
+// Danh mục lưu ở Google mất ~2s để trả về, nên giữ lại bản mới nhất trong trình duyệt
+// và vẽ ngay từ bản đó, xong âm thầm thay bằng dữ liệu thật vừa gọi được.
+const CACHE_KEY = 'uadochoiha_cloud_cache_v1';
+const cachePut = () => { try{ localStorage.setItem(CACHE_KEY, JSON.stringify(products)); }catch(e){} };
+const cacheGet = () => { try{ const s = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null'); return Array.isArray(s) ? s : null; }catch(e){ return null } };
 async function load(){
   if(API_URL){
-    try{ const r = await api('list'); products = r.products || []; apiVersion = r.version || 0; }
-    catch(e){ products = []; toast('Không tải được dữ liệu từ Google, kiểm tra lại API_URL'); }
+    const cached = cacheGet();
+    let drawnFromCache = !!(cached && cached.length);
+    if(drawnFromCache){ products = cached; paint(); }
+    let changed = false;
+    try{
+      const r = await api('list'), fresh = r.products || [];
+      apiVersion = r.version || 0;
+      changed = JSON.stringify(fresh) !== JSON.stringify(products);
+      if(changed){ products = fresh; cachePut(); }
+    }
+    catch(e){
+      toast(drawnFromCache ? 'Không gọi được Google, đang hiện bản lưu gần nhất'
+                           : 'Không tải được dữ liệu từ Google, kiểm tra lại API_URL');
+    }
+    if(changed || !drawnFromCache) paint();
     return;
   }
-  try{ const s = localStorage.getItem(STORE_KEY); if(s){ products = JSON.parse(s); return; } }catch(e){}
-  try{ const r = await fetch('products.json',{cache:'no-store'}); if(r.ok){ products = await r.json(); return; } }catch(e){}
+  try{ const s = localStorage.getItem(STORE_KEY); if(s){ products = JSON.parse(s); paint(); return; } }catch(e){}
+  try{ const r = await fetch('products.json',{cache:'no-store'}); if(r.ok){ products = await r.json(); paint(); return; } }catch(e){}
   products = SAMPLE.slice();
+  paint();
 }
 function save(){
-  if(API_URL) return;
+  if(API_URL){ cachePut(); return; }
   try{ localStorage.setItem(STORE_KEY, JSON.stringify(products)); }
   catch(e){ toast('Bộ nhớ trình duyệt đầy, hãy xuất JSON rồi xóa bớt ảnh'); }
 }
 
 /* ===== LỌC + HIỂN THỊ ===== */
 function filtered(){
-  const toks = norm($('#q').value.trim()).split(/\s+/).filter(Boolean), mn = parseFloat($('#min').value), mx = parseFloat($('#max').value);
+  const toks = searchToks(), mn = parseFloat($('#min').value), mx = parseFloat($('#max').value);
   let list = products.filter(p =>
     toks.every(t => (norm(p.name) + ' ' + norm(p.desc)).includes(t)) &&
     (!cat || catOf(p) === cat) &&
@@ -134,8 +153,55 @@ function renderCats(){
     + CATS.filter(c => n[c[0]]).map(c => chip(c[0], c[0])).join('')
     + (n['Khác'] ? chip('Khác', 'Khác') : '');
 }
+const searchToks = () => norm($('#q').value.trim()).split(/\s+/).filter(Boolean);
+// Từ khoá được tìm trên bản bỏ dấu, nên phải map ngược vị trí về từng chữ cái gốc mới bôi đúng chỗ
+function hl(src, toks){
+  const cps = Array.from(String(src || ''));
+  if(!toks.length) return esc(cps.join(''));
+  const parts = cps.map(c => norm(c));
+  const flat = parts.join('');
+  const map = [];
+  parts.forEach((p, i) => { for(let j = 0; j < p.length; j++) map.push(i); });
+  const on = new Uint8Array(cps.length);
+  toks.forEach(t => { let i = -1; while((i = flat.indexOf(t, i + 1)) >= 0)
+    for(let k = i; k < i + t.length && k < map.length; k++) on[map[k]] = 1; });
+  let out = '', open = false;
+  cps.forEach((c, i) => {
+    const e = esc(c); if(!e) return;
+    if(on[i] && !open){ out += '<mark>'; open = true; }
+    if(!on[i] && open){ out += '</mark>'; open = false; }
+    out += e;
+  });
+  return out + (open ? '</mark>' : '');
+}
+const lev = (a, b) => {
+  const m = Array.from({length: b.length + 1}, (_, j) => j);
+  for(let i = 1; i <= a.length; i++){
+    let prev = m[0]; m[0] = i;
+    for(let j = 1; j <= b.length; j++){
+      const t = m[j];
+      m[j] = Math.min(m[j] + 1, m[j - 1] + 1, prev + (a[i - 1] === b[j - 1] ? 0 : 1));
+      prev = t;
+    }
+  }
+  return m[b.length];
+};
+// Tìm không ra thì đoán xem khách muốn gõ từ nào: so từng từ trong ô tìm với từng chữ trong tên món hàng
+function suggest(q){
+  const toks = norm(q.trim()).split(/\s+/).filter(t => t.length >= 3);
+  if(!toks.length) return [];
+  const freq = {};
+  products.forEach(p => plain(p.name).split(/\s+/).forEach(w => { if(w.length > 1) freq[w] = (freq[w] || 0) + 1; }));
+  const co = new Set(Object.keys(freq).map(norm));   // từ nào đã có thật trong tên món thì khỏi đoán thay
+  const best = new Map();
+  toks.filter(t => !co.has(t)).forEach(t => Object.keys(freq).forEach(w => {
+    const d = lev(t, norm(w));
+    if(d > 0 && d <= 2 && (!best.has(w) || best.get(w) > d)) best.set(w, d);
+  }));
+  return [...best].sort((a, b) => a[1] - b[1] || freq[b[0]] - freq[a[0]]).slice(0, 5).map(x => x[0]);
+}
 function render(){
-  const list = filtered(), pages = Math.max(1, Math.ceil(list.length/PER_PAGE));
+  const toks = searchToks(), list = filtered(), pages = Math.max(1, Math.ceil(list.length/PER_PAGE));
   if(page > pages) page = pages;
   const slice = list.slice((page-1)*PER_PAGE, page*PER_PAGE);
   $('#count').textContent = list.length + ' sản phẩm' + (cat ? ' · ' + cat : '');
@@ -143,14 +209,14 @@ function render(){
    <article class="card">
     <div class="pic">${p.img ? `<img src="${esc(thumb(p.img,400))}" alt="${esc(p.name)}" loading="lazy">` : esc(p.emoji||'🧸')}</div>
     <div class="info">
-     <h3 title="${esc(p.name)}">${esc(p.name)}</h3>
-     <p class="desc">${esc(p.desc)}</p>
+     <h3 title="${esc(p.name)}">${hl(p.name, toks)}</h3>
+     <p class="desc">${hl(p.desc, toks)}</p>
      <div class="price">${vnd(p.price)}</div>
      ${safeUrl(p.link) ? `<a class="more" href="${esc(safeUrl(p.link))}" target="_blank" rel="noopener noreferrer">Xem bài viết</a>` : ''}
      ${admin ? `<div class="row"><button class="btn" data-edit="${p.id}">Sửa</button><button class="btn g" data-del="${p.id}">Xóa</button></div>` : ''}
     </div>
    </article>`).join('')
-   : '<div class="empty">Chưa có món nào khớp. Thử đổi từ khóa, khoảng giá hoặc danh mục khác nhé!</div>';
+   : emptyBox();
   const b = [`<button ${page===1?'disabled':''} data-pg="${page-1}" aria-label="Trang trước">‹</button>`];
   for(let i=1;i<=pages;i++) if(pages<=7 || i===1 || i===pages || Math.abs(i-page)<=1)
     b.push(`<button data-pg="${i}" ${i===page?'aria-current="true"':''}>${i}</button>`);
@@ -158,7 +224,21 @@ function render(){
   b.push(`<button ${page===pages?'disabled':''} data-pg="${page+1}" aria-label="Trang sau">›</button>`);
   $('#pager').innerHTML = pages>1 ? b.join('') : '';
   $('#adminBar').hidden = !admin;
+  $('#grid').querySelectorAll('.pic img').forEach(i => {
+    const in_ = () => i.classList.add('in');
+    if(i.complete) in_(); else { i.addEventListener('load', in_, {once:true}); i.addEventListener('error', in_, {once:true}); }
+  });
 }
+function emptyBox(){
+  const q = $('#q').value.trim(), sug = q ? suggest(q) : [];
+  return `<div class="empty">
+    ${q ? `Không thấy món nào khớp "<b>${esc(q)}</b>".` : 'Chưa có món nào khớp bộ lọc hiện tại.'}
+    ${sug.length ? `<div class="sugs">${sug.map(w => `<button class="sug" data-q="${esc(w)}">${esc(w)}</button>`).join('')}</div>
+      <p class="hint">Hay là bạn muốn tìm một trong mấy từ này?</p>` : ''}
+    <p class="hint">Thử bỏ bớt từ khoá, đổi khoảng giá hoặc chọn danh mục khác nhé!</p>
+  </div>`;
+}
+const paint = () => { renderCats(); render(); jsonLd(); };
 
 /* ===== SỰ KIỆN ===== */
 ['q','min','max','sort'].forEach(id => $('#'+id).addEventListener('input', () => {page=1;render()}));
@@ -304,6 +384,8 @@ $('#form').onsubmit = async e => {
   if(stale) alert(OLD_MSG); else toast('Đã lưu sản phẩm');
 };
 $('#grid').onclick = async e => {
+  const sg = e.target.closest('.sug');
+  if(sg){ $('#q').value = sg.dataset.q; page = 1; render(); $('#q').focus(); return; }
   const ed = e.target.closest('[data-edit]'), dl = e.target.closest('[data-del]');
   if(ed) openForm(products.find(p=>p.id===+ed.dataset.edit));
   if(dl && confirm('Xóa sản phẩm này?')){
@@ -315,7 +397,8 @@ $('#grid').onclick = async e => {
 
 /* Dữ liệu có cấu trúc để Google và mạng xã hội đọc ra giá + tình trạng từng món */
 function jsonLd(){
-  const s = document.createElement('script'); s.type = 'application/ld+json';
+  document.getElementById('ld')?.remove();   // paint() có thể chạy 2 lần (bản lưu rồi bản thật)
+  const s = document.createElement('script'); s.id = 'ld'; s.type = 'application/ld+json';
   s.textContent = JSON.stringify({
     '@context': 'https://schema.org', '@type': 'ItemList', name: 'uadochoiha – sản phẩm đang bán',
     itemListElement: products.slice(0, 60).map((p, i) => ({
@@ -386,4 +469,4 @@ $('#igRow').hidden = !API_URL;
 const loadMsgs = ['Đang gọi hàng về cho bạn...', 'Chờ xíu nhen 🫧', 'Đang thổi bong bóng nè...', 'Sắp xong rồi nè ☘️'];
 let loadIdx = 0;
 const loadTimer = setInterval(() => { const m = $('#loadMsg'); if(!m) return clearInterval(loadTimer); m.textContent = loadMsgs[++loadIdx % loadMsgs.length]; }, 1700);
-load().then(() => { renderCats(); render(); jsonLd(); });
+load();
