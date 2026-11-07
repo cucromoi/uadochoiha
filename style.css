@@ -176,3 +176,23 @@ dialog form{display:grid;gap:10px}
 .cats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 12px}
 .cats button{display:flex;align-items:center;justify-content:center;min-height:44px;border-radius:14px;padding:6px 9px;font-size:13px;white-space:nowrap}
 .cats button span{overflow:hidden;text-overflow:ellipsis;min-width:0}}
+
+/* Trang tĩnh từng món (p/<id>.html) do make-pages.js sinh — không chạy script.js nên ảnh hiện thẳng, không hiệu ứng */
+.item{padding:18px 0 6px}
+.crumb{display:flex;gap:7px;flex-wrap:wrap;align-items:center;font-size:14px;color:var(--mute);margin:0 0 14px}
+.crumb a{color:var(--sky);text-decoration:none;border-bottom:1px dashed var(--line)}
+.crumb i{font-style:normal;opacity:.6}
+.item-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;background:var(--card);border:1px solid var(--line);
+border-radius:18px;padding:16px;box-shadow:0 6px 16px rgba(10,16,32,.28)}
+.item-pic{aspect-ratio:1;border-radius:14px;overflow:hidden;background:linear-gradient(#a6defa,#dff4fc)}
+.item-pic img{display:block;width:100%;height:100%;object-fit:cover}
+.item-info{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+.item-info h1{font-size:25px;line-height:31px}
+.item-desc{font-size:15px;line-height:22px;color:var(--mute);margin:0}
+.item-cat,.item-note{font-size:14px;color:var(--mute);margin:0}
+.pager2{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:16px 0 6px}
+.pager2 a{color:var(--sky);text-decoration:none;font-size:15px;border-bottom:1px dashed var(--line)}
+.ft2{grid-template-columns:1fr 1fr}
+@media(min-width:760px){.item-grid{grid-template-columns:380px minmax(0,1fr);gap:26px;padding:22px}
+.item-info h1{font-size:30px;line-height:37px}}
+@media(max-width:760px){.ft2{grid-template-columns:1fr}}

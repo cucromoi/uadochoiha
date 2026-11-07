@@ -14,6 +14,8 @@ const OFF_RE = /hàng off|\[off|off\]|đã bán|sold ?out|ngừng nhận/i;
 // thành "chó" -> 115 món bị nhét vào Thú bông.
 // Từ nào khớp TRÁI NHẤT thắng; cùng vị trí thì cụm dài hơn thắng ("hộp bút" trước "bút").
 // Viết CÓ DẤU vì "bìa" khác "bia", "kệ" khác "xe". Đo lại trên 406 món: 13 nhóm, chỉ 1 món vào "Khác".
+/* make-pages.js cắt đúng 2 đoạn có marker này để trang p/<id>.html nhóm danh mục giống hệt trang chủ */
+// >>> CATS_DATA
 const CATS = [
   ['Thú bông', ['gấu bông', 'thú bông', 'cục bông', 'plush', 'chó rách', 'chó rán', 'bông', 'gấu']],
   ['Balo & túi', ['balo', 'ba lô', 'tote', 'pouch', 'itabag', 'crossbag', 'card holder', 'ví cầm', 'ví gập', 'ví đựng', 'ví', 'bóp', 'thắt lưng', 'dây thắt', 'dây rút', 'túi']],
@@ -34,6 +36,7 @@ const CATS = [
 // Tên kiểu "chiikawa gõ mõ", "usagi ngái ngủ" không có danh từ chỉ loại -> figure/thú bông của nhà đó
 const CAT_CHARS = ['chiikawa', 'hachiware', 'usagi', 'rilakkuma', 'korilakkuma', 'miffy', 'melody', 'kitty', 'pompompurin', 'cinnamoroll', 'snoopy', 'sumikko', 'hamtaro', 'pingu', 'momonga', 'aiko', 'kuromi', 'pochacco'];
 const CAT_PREFIX_DROP = ['hàng off', 'chính hãng', 'tổng hợp', 'gom', 'error', 'restock', 'sale', 'new', 'only'];
+// <<< CATS_DATA
 
 const SAMPLE = [
  {id:1,name:'Gấu bông Bunny tai dài',price:129000,desc:'Thỏ bông mềm mịn, ôm êm, cao 30cm. Quà tặng siêu dễ thương.',img:'',emoji:'🐰'},
@@ -61,6 +64,7 @@ let cat = '';
 /* ===== GIÚP HIỂN THỊ ===== */
 const isOff = p => OFF_RE.test((p.name || '') + ' ' + (p.desc || ''));
 // Bỏ emoji + dấu câu, giữ nguyên dấu tiếng Việt để "chó" không nhầm với "cho"
+// >>> CATS_LOGIC
 const plain = s => String(s || '').toLowerCase()
   .replace(/[\p{Extended_Pictographic}\u200d\ufe0f]/gu, ' ')
   .replace(/[^0-9a-zàáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđ\s]/g, ' ')
@@ -85,6 +89,7 @@ function catOf(p) {
   catMemo.set(key, c);
   return c;
 }
+// <<< CATS_LOGIC
 // Thẻ chỉ rộng ~230-260px nên gọi bản 400px của Drive (đo: w800 = 47KB, w400 = 26KB)
 const thumb = (u, w) => String(u || '').replace(/sz=w\d+/, 'sz=w' + w);
 

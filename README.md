@@ -14,6 +14,7 @@ Website cửa hàng đồ chơi — trang giới thiệu, tìm kiếm và đặt
 - **Lưu trữ linh hoạt** — Google Apps Script (đồng bộ đám mây), file `products.json`, hoặc `localStorage`
 - **Xuất dữ liệu** — xuất `products.json` để đẩy lên GitHub
 - **Hiệu ứng vui** — emoji bay, nhũ lấp lánh theo con trỏ, confetti tim khi bấm, thẻ bật nhẹ
+- **Lên Google** — mỗi món có trang riêng `p/<id>.html` với tên, giá, ảnh và JSON-LD nằm thẳng trong HTML (không phải chờ JavaScript), kèm `sitemap.xml` 414 URL và `robots.txt`; trang xác minh Google Search Console đặt ở gốc repo
 
 ## Công nghệ
 
@@ -32,7 +33,13 @@ uadochoiha/
 ├── logo          # Hình logo
 ├── SRN_CookieRun_Regular.ttf  # font gốc 6,7MB (12.558 glyph, chứa cả bộ Hangul+CJK) — chỉ để làm nguồn
 ├── CookieRun-VN.woff2         # 543 glyph Latin+tiếng Việt, 68KB — file trang thật tải, có preload trong <head>
-└── font-subset.py             # cắt lại font gốc thành woff2 trên khi đổi font
+├── font-subset.py             # cắt lại font gốc thành woff2 trên khi đổi font
+├── make-pages.js              # sinh p/<id>.html + sitemap.xml từ dữ liệu Google; đọc thẳng đoạn CATS/catOf trong script.js (marker CATS_DATA / CATS_LOGIC) nên nhóm danh mục không thể lệch trang chủ
+├── p/                         # 413 trang sản phẩm tĩnh — do make-pages.js sinh, không sửa tay
+├── robots.txt                 # cho phép Google thu thập + trỏ tới sitemap
+├── sitemap.xml                # trang chủ + 413 trang sản phẩm
+├── google846760f274bb1608.html # file xác minh Google Search Console — xóa là mất quyền sở hữu trang
+└── .nojekyll                  # báo GitHub Pages chở nguyên file, khỏi qua Jekyll
 ```
 
 ## Cấu hình
