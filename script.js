@@ -2,6 +2,8 @@
 const ADMIN_PASSWORD = 'admin123';              // Chỉ dùng khi API_URL để trống. Khi dùng Google, mật khẩu đặt trong Apps Script
 const INSTAGRAM_URL  = 'https://www.instagram.com/uadochoiha';   // Đổi thành trang Instagram của shop
 const THREADS_URL    = 'https://www.threads.com/@uadochoiha';     // Đổi thành trang Threads của shop
+const ZALO_URL       = 'https://zalo.me/0931328825';              // Zalo chat theo số điện thoại, đổi số là đổi luôn link
+const TIKTOK_URL     = 'https://www.tiktok.com/@uadochoiha';
 const PER_PAGE       = 12;                      // Số sản phẩm mỗi trang
 const API_URL        = 'https://script.google.com/macros/s/AKfycbx6MHi1WtpljvuJdGSi6LdmTej8wSMFKyGSXMexoo6fnuHrmin8fU4w9SrJHR1qmf4o/exec';  // Dán URL Web App của Google Apps Script vào đây. Để trống = lưu trong trình duyệt
 const STORE_KEY      = 'uadochoiha_products_v1';
@@ -341,6 +343,8 @@ $('#impFile').onchange = e => {
 
 $('#ctIg').href = INSTAGRAM_URL;
 $('#ctTh').href = THREADS_URL;
+$('#ctZa').href = ZALO_URL;
+$('#ctTk').href = TIKTOK_URL;
 const noteDlg = $('#noteDlg');
 ['#noteBtn', '#noteBtn2'].forEach(id => $(id).onclick = () => noteDlg.showModal());
 $('#noteClose').onclick = () => noteDlg.close();
@@ -350,6 +354,8 @@ noteDlg.addEventListener('click', e => {
 });
 $('#ftIg').href = INSTAGRAM_URL;
 $('#ftTh').href = THREADS_URL;
+$('#ftZa').href = ZALO_URL;
+$('#ftTk').href = TIKTOK_URL;
 $('#yr').textContent = new Date().getFullYear();
 
 /* Bộ đếm lượt truy cập (cần Apps Script): mỗi lần mở web trong một phiên tính 1 lượt, admin đang đăng nhập không tính */

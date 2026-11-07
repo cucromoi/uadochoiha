@@ -41,7 +41,7 @@ Trong `script.js`:
 |---|---|
 | `API_URL` | URL Google Apps Script Web App (để trống nếu chỉ dùng `localStorage`) |
 | `ADMIN_PASSWORD` | Mật khẩu quản trị khi không dùng API |
-| Link Instagram / Threads | Mạng xã hội của shop |
+| Link Instagram / Threads / Zalo / TikTok | Mạng xã hội và số liên hệ của shop |
 
 Dữ liệu `localStorage` nằm dưới key `uadochoiha_products_v1`.
 
@@ -84,7 +84,7 @@ Số liệu trên 406 món thật — 13 nhóm, 229 từ khoá: 121 từ thắng
 
 ## Liên hệ
 
-- Đặt hàng qua inbox Instagram / Threads (link trên trang chủ)
+- Đặt hàng qua Zalo 0931 328 825, inbox Instagram / Threads, hoặc TikTok @uadochoiha (link trên trang chủ)
 - Ship toàn quốc, thanh toán chuyển khoản
 
 ---
