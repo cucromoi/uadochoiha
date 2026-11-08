@@ -59,6 +59,7 @@ const esc = s => String(s??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;'
 function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2200)}
 
 let products = [], admin = sessionStorage.getItem('tbx_admin') === '1', page = 1, editId = null, imgData = '';
+let pageIds = new Set();   // id món đã có trang tĩnh p/<id>.html; món mới chưa sinh trang thì không gắn link tránh 404
 let cat = '';
 
 /* ===== GIÚP HIỂN THỊ ===== */
@@ -107,7 +108,16 @@ async function api(action, data = {}, post = false){
 const CACHE_KEY = 'uadochoiha_cloud_cache_v1';
 const cachePut = () => { try{ localStorage.setItem(CACHE_KEY, JSON.stringify(products)); }catch(e){} };
 const cacheGet = () => { try{ const s = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null'); return Array.isArray(s) ? s : null; }catch(e){ return null } };
+async function fetchPageIds(){
+  try{
+    const r = await fetch('p/manifest.json', {cache:'no-store'});
+    if(!r.ok) return new Set();
+    const a = await r.json();
+    return new Set((Array.isArray(a) ? a : []).map(String));
+  }catch(e){ return new Set(); }
+}
 async function load(){
+  pageIds = await fetchPageIds();
   if(API_URL){
     const cached = cacheGet();
     let drawnFromCache = !!(cached && cached.length);
@@ -210,17 +220,19 @@ function render(){
   if(page > pages) page = pages;
   const slice = list.slice((page-1)*PER_PAGE, page*PER_PAGE);
   $('#count').textContent = list.length + ' sản phẩm' + (cat ? ' · ' + cat : '');
-  $('#grid').innerHTML = slice.length ? slice.map(p => `
+  $('#grid').innerHTML = slice.length ? slice.map(p => {
+    const href = pageIds.has(String(p.id)) ? `p/${p.id}.html` : '';
+    return `
    <article class="card">
-    <a class="pic-link" href="p/${p.id}.html" aria-label="${esc(p.name)}"><div class="pic">${p.img ? `<img src="${esc(thumb(p.img,400))}" alt="${esc(p.name)}" loading="lazy">` : esc(p.emoji||'🧸')}</div></a>
+    ${href ? `<a class="pic-link" href="${href}" aria-label="${esc(p.name)}">` : ''}<div class="pic">${p.img ? `<img src="${esc(thumb(p.img,400))}" alt="${esc(p.name)}" loading="lazy">` : esc(p.emoji||'🧸')}</div>${href ? '</a>' : ''}
     <div class="info">
-     <h3 title="${esc(p.name)}"><a href="p/${p.id}.html">${hl(p.name, toks)}</a></h3>
+     <h3 title="${esc(p.name)}">${href ? `<a href="${href}">${hl(p.name, toks)}</a>` : hl(p.name, toks)}</h3>
      <p class="desc">${hl(p.desc, toks)}</p>
      <div class="price">${vnd(p.price)}</div>
      ${safeUrl(p.link) ? `<a class="more" href="${esc(safeUrl(p.link))}" target="_blank" rel="noopener noreferrer">Xem bài viết</a>` : ''}
      ${admin ? `<div class="row"><button class="btn" data-edit="${p.id}">Sửa</button><button class="btn g" data-del="${p.id}">Xóa</button></div>` : ''}
     </div>
-   </article>`).join('')
+   </article>`; }).join('')
    : emptyBox();
   const b = [`<button ${page===1?'disabled':''} data-pg="${page-1}" aria-label="Trang trước">‹</button>`];
   for(let i=1;i<=pages;i++) if(pages<=7 || i===1 || i===pages || Math.abs(i-page)<=1)

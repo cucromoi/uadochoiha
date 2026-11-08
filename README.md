@@ -14,7 +14,7 @@ Website cửa hàng đồ chơi — trang giới thiệu, tìm kiếm và đặt
 - **Lưu trữ linh hoạt** — Google Apps Script (đồng bộ đám mây), file `products.json`, hoặc `localStorage`
 - **Xuất dữ liệu** — xuất `products.json` để đẩy lên GitHub
 - **Hiệu ứng vui** — emoji bay, nhũ lấp lánh theo con trỏ, confetti tim khi bấm, thẻ bật nhẹ
-- **Lên Google** — mỗi món có trang riêng `p/<id>.html` với tên, giá, ảnh và JSON-LD nằm thẳng trong HTML (không phải chờ JavaScript), kèm `sitemap.xml` 414 URL và `robots.txt`; trang xác minh Google Search Console đặt ở gốc repo
+- **Lên Google** — mỗi món có trang riêng `p/<id>.html` với tên, giá, ảnh và JSON-LD nằm thẳng trong HTML (không phải chờ JavaScript), kèm `sitemap.xml` và `robots.txt`; trang chủ chỉ gắn link tới món đã có trang tĩnh (`p/manifest.json`) nên món mới chưa sinh trang không dính 404; trang xác minh Google Search Console đặt ở gốc repo
 
 ## Công nghệ
 
@@ -35,9 +35,9 @@ uadochoiha/
 ├── CookieRun-VN.woff2         # 543 glyph Latin+tiếng Việt, 68KB — file trang thật tải, có preload trong <head>
 ├── font-subset.py             # cắt lại font gốc thành woff2 trên khi đổi font
 ├── make-pages.js              # sinh p/<id>.html + sitemap.xml từ dữ liệu Google; đọc thẳng đoạn CATS/catOf trong script.js (marker CATS_DATA / CATS_LOGIC) nên nhóm danh mục không thể lệch trang chủ
-├── p/                         # 413 trang sản phẩm tĩnh — do make-pages.js sinh, không sửa tay
+├── p/                         # trang sản phẩm tĩnh + manifest.json — do make-pages.js sinh, không sửa tay
 ├── robots.txt                 # cho phép Google thu thập + trỏ tới sitemap
-├── sitemap.xml                # trang chủ + 413 trang sản phẩm
+├── sitemap.xml                # trang chủ + toàn bộ trang sản phẩm
 ├── google846760f274bb1608.html # file xác minh Google Search Console — xóa là mất quyền sở hữu trang
 └── .nojekyll                  # báo GitHub Pages chở nguyên file, khỏi qua Jekyll
 ```
