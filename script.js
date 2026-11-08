@@ -56,6 +56,8 @@ const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f
 const vnd = n => Number(n).toLocaleString('vi-VN') + ' đ';
 const safeUrl = u => /^https?:\/\//i.test(u || '') ? u : '';
 const esc = s => String(s??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const IG_TAIL = /\s*(?:-?\s*[\d,.]+\s+likes,\s*[\d,.]+\s+comments)?\s*-\s*@uadochoiha\s+on\s+[A-Za-z]+\s+\d{1,2},\s*\d{4}\s*$/i;
+const scrub = s => String(s??'').replace(IG_TAIL, '');   // chữ ký trình scrape IG dính trong caption
 function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2200)}
 
 let products = [], admin = sessionStorage.getItem('tbx_admin') === '1', page = 1, editId = null, imgData = '';
@@ -227,7 +229,7 @@ function render(){
     ${href ? `<a class="pic-link" href="${href}" aria-label="${esc(p.name)}">` : ''}<div class="pic">${p.img ? `<img src="${esc(thumb(p.img,400))}" alt="${esc(p.name)}" loading="lazy">` : esc(p.emoji||'🧸')}</div>${href ? '</a>' : ''}
     <div class="info">
      <h3 title="${esc(p.name)}">${href ? `<a href="${href}">${hl(p.name, toks)}</a>` : hl(p.name, toks)}</h3>
-     <p class="desc">${hl(p.desc, toks)}</p>
+     <p class="desc">${hl(scrub(p.desc), toks)}</p>
      <div class="price">${vnd(p.price)}</div>
      ${safeUrl(p.link) ? `<a class="more" href="${esc(safeUrl(p.link))}" target="_blank" rel="noopener noreferrer">Xem bài viết</a>` : ''}
      ${admin ? `<div class="row"><button class="btn" data-edit="${p.id}">Sửa</button><button class="btn g" data-del="${p.id}">Xóa</button></div>` : ''}
@@ -419,7 +421,7 @@ function jsonLd(){
   s.textContent = JSON.stringify({
     '@context': 'https://schema.org', '@type': 'ItemList', name: 'uadochoiha – sản phẩm đang bán',
     itemListElement: products.slice(0, 60).map((p, i) => ({
-      '@type': 'ListItem', position: i + 1, name: p.name, description: p.desc || '',
+      '@type': 'ListItem', position: i + 1, name: p.name, description: scrub(p.desc) || '',
       url: location.href, image: p.img ? thumb(p.img, 800) : undefined,
       offers: {'@type': 'Offer', price: p.price, priceCurrency: 'VND',
         availability: isOff(p) ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock'}

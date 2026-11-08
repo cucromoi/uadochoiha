@@ -32,6 +32,10 @@ const cleanName = s => String(s || '')
   .trim()
   .replace(/^./, c => c.toUpperCase());
 
+// chữ ký của trình scrape IG bám vào caption: "… - 48 likes, 0 comments - @uadochoiha on July 19, 2026"
+const IG_TAIL = /\s*(?:-?\s*[\d,.]+\s+likes,\s*[\d,.]+\s+comments)?\s*-\s*@uadochoiha\s+on\s+[A-Za-z]+\s+\d{1,2},\s*\d{4}\s*$/;
+const cleanDesc = s => String(s || '').replace(IG_TAIL, '').replace(/\s+/g, ' ').trim();
+
 const metaDesc = (name, price, desc) => {
   const base = `${name} giá ${vnd(price)}${desc ? ': ' + desc : ''}`;
   return base.length > 155 ? base.slice(0, 152).trimEnd() + '…' : base;
@@ -43,7 +47,7 @@ function page(p, cat, prev, next) {
   const img = thumb(p.img, 800);
   const ld = {
     '@context': 'https://schema.org', '@type': 'Product',
-    name, image: [img], description: p.desc || name, sku: String(p.id),
+    name, image: [img], description: cleanDesc(p.desc) || name, sku: String(p.id),
     brand: { '@type': 'Brand', name: 'uadochoiha' },
     offers: { '@type': 'Offer', price: String(p.price), priceCurrency: 'VND', url },
   };
@@ -57,13 +61,13 @@ function page(p, cat, prev, next) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(name)} ${vnd(p.price)} – uadochoiha</title>
-<meta name="description" content="${esc(metaDesc(name, p.price, p.desc))}">
+<meta name="description" content="${esc(metaDesc(name, p.price, cleanDesc(p.desc)))}">
 <link rel="canonical" href="${url}">
 <meta name="theme-color" content="#36425f">
 <meta property="og:type" content="product">
 <meta property="og:site_name" content="uadochoiha">
 <meta property="og:title" content="${esc(name)}">
-<meta property="og:description" content="${esc(metaDesc(name, p.price, p.desc))}">
+<meta property="og:description" content="${esc(metaDesc(name, p.price, cleanDesc(p.desc)))}">
 <meta property="og:url" content="${url}">
 <meta property="og:image" content="${esc(img)}">
 <meta name="twitter:card" content="summary_large_image">
@@ -84,7 +88,7 @@ function page(p, cat, prev, next) {
   <div class="item-info">
    <h1>${esc(name)}</h1>
    <p class="price">${vnd(p.price)}</p>
-   ${p.desc ? `<p class="item-desc">${esc(p.desc)}</p>` : ''}
+   ${cleanDesc(p.desc) ? `<p class="item-desc">${esc(cleanDesc(p.desc))}</p>` : ''}
    <p class="item-cat">Danh mục: <b>${esc(cat)}</b></p>
    <div class="contacts">
     <a class="contact" href="${ZALO}" target="_blank" rel="noopener">Nhắn Zalo đặt món này</a>
