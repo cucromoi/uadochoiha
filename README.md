@@ -37,7 +37,7 @@ uadochoiha/
 ├── make-pages.js              # sinh p/<id>.html + sitemap.xml từ dữ liệu Google; đọc thẳng đoạn CATS/catOf trong script.js (marker CATS_DATA / CATS_LOGIC) nên nhóm danh mục không thể lệch trang chủ
 ├── p/                         # trang sản phẩm tĩnh + manifest.json — do make-pages.js sinh, không sửa tay
 ├── robots.txt                 # cho phép Google thu thập + trỏ tới sitemap
-├── sitemap.xml                # trang chủ + toàn bộ trang sản phẩm
+├── sitemap.xml                # sitemap index trỏ tới sitemap-pages.xml (trang chủ) + sitemap-products.xml (toàn bộ món)
 ├── google846760f274bb1608.html # file xác minh Google Search Console — xóa là mất quyền sở hữu trang
 └── .nojekyll                  # báo GitHub Pages chở nguyên file, khỏi qua Jekyll
 ```

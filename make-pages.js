@@ -133,9 +133,11 @@ async function main(){
   for (const f of fs.readdirSync(dir)) if (f.endsWith('.html')) prevHtml.set(f, fs.readFileSync(path.join(dir, f), 'utf8'));
   // giữ lastmod cũ của món không đổi nội dung: Google chỉ tin ngày sửa khi nó thật sự sửa
   const prevMod = new Map();
-  const sitemapPath = path.join(ROOT, 'sitemap.xml');
-  if (fs.existsSync(sitemapPath))
-    for (const m of fs.readFileSync(sitemapPath, 'utf8').matchAll(/<loc>([^<]+)<\/loc><lastmod>([^<]+)/g)) prevMod.set(m[1], m[2]);
+  for (const f of ['sitemap.xml', 'sitemap-pages.xml', 'sitemap-products.xml']) {
+    const p = path.join(ROOT, f);
+    if (!fs.existsSync(p)) continue;
+    for (const m of fs.readFileSync(p, 'utf8').matchAll(/<loc>([^<]+)<\/loc><lastmod>([^<]+)/g)) prevMod.set(m[1], m[2]);
+  }
 
   const today = new Date().toISOString().slice(0, 10);
   const rows = sorted.map((row, i) => {
@@ -152,10 +154,20 @@ async function main(){
     bytes += Buffer.byteLength(r.html);
   });
 
-  const urls = [{ url: SITE + '/', lastmod: today }].concat(rows.map(r => ({ url: r.url, lastmod: r.lastmod })));
-  fs.writeFileSync(sitemapPath,
-    '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
-    urls.map(u => `  <url><loc>${u.url}</loc><lastmod>${u.lastmod}</lastmod></url>`).join('\n') + '\n</urlset>\n');
+  const urlset = list => '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+    list.map(u => `  <url><loc>${u.url}</loc><lastmod>${u.lastmod}</lastmod></url>`).join('\n') + '\n</urlset>\n';
+  const pages = [{ url: SITE + '/', lastmod: today }];
+  fs.writeFileSync(path.join(ROOT, 'sitemap-pages.xml'), urlset(pages));
+  fs.writeFileSync(path.join(ROOT, 'sitemap-products.xml'), urlset(rows));
+  // sitemap.xml là index: Google đọc file này chỉ ~400 bytes rồi tải từng file con, hỏng 1 file con vẫn còn file kia
+  const children = [['sitemap-pages.xml', pages], ['sitemap-products.xml', rows]];
+  fs.writeFileSync(path.join(ROOT, 'sitemap.xml'),
+    '<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+    children.map(([f, list]) => {
+      const mod = list.map(u => u.lastmod).sort().slice(-1)[0];
+      return `  <sitemap><loc>${SITE}/${f}</loc><lastmod>${mod}</lastmod></sitemap>`;
+    }).join('\n') + '\n</sitemapindex>\n');
+  const urls = pages.concat(rows);
   // Trang chủ chỉ gắn link tới món có trang tĩnh thật; món mới thêm chưa chạy lệnh này thì không bị link 404
   fs.writeFileSync(path.join(dir, 'manifest.json'), JSON.stringify(sorted.map(r => r.p.id)));
 
@@ -163,7 +175,7 @@ async function main(){
   sorted.forEach(r => { byCat[r.cat] = (byCat[r.cat] || 0) + 1; });
   console.log('món:', products.length, '| trang đã sinh:', sorted.length,
     '| dung lượng:', (bytes / 1048576).toFixed(2) + 'MB', '| trung bình:', Math.round(bytes / sorted.length) + ' bytes');
-  console.log('sitemap:', urls.length, 'URL | trang viết lại:', rows.filter(r => prevHtml.get(r.p.id + '.html') !== r.html).length, '| ngày sửa khác nhau:', new Set(rows.map(r => r.lastmod)).size);
+  console.log('sitemap index:', urls.length, 'URL trong 2 file con | trang viết lại:', rows.filter(r => prevHtml.get(r.p.id + '.html') !== r.html).length, '| ngày sửa khác nhau:', new Set(rows.map(r => r.lastmod)).size);
   if (noImg) console.log('lưu ý:', noImg, 'món không có ảnh (trang vẫn sinh, chỉ thiếu og:image)');
   console.log('danh mục:', Object.entries(byCat).sort((a, b) => b[1] - a[1]).map(([k, v]) => k + ' ' + v).join(' · '));
 }
