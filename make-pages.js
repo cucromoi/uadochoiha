@@ -23,6 +23,8 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 const jsonLdEsc = s => JSON.stringify(String(s ?? ''));
 const vnd = n => Number(n).toLocaleString('vi-VN') + ' đ';
 const thumb = (u, w) => String(u || '').replace(/sz=w\d+/, 'sz=w' + w);
+// giá chỉ chốt theo đợt hàng, nên để mốc hết hạn sang năm sau cho khỏi bị coi là hết hạn sớm
+const priceValid = new Date(Date.UTC(new Date().getUTCFullYear() + 1, 11, 31)).toISOString().slice(0, 10);
 
 // Bỏ emoji + dấu "…" lộn xộn trong tên món, viết hoa chữ đầu cho gọn
 const cleanName = s => String(s || '')
@@ -49,7 +51,8 @@ function page(p, cat, prev, next) {
     '@context': 'https://schema.org', '@type': 'Product',
     name, image: [img], description: cleanDesc(p.desc) || name, sku: String(p.id),
     brand: { '@type': 'Brand', name: 'uadochoiha' },
-    offers: { '@type': 'Offer', price: String(p.price), priceCurrency: 'VND', url },
+    // hàng bên shop là order về 2-3 tuần (ghi ngay trong phần Lưu ý khi order) nên PreOrder là mô tả đúng, không phải InStock
+    offers: { '@type': 'Offer', price: String(p.price), priceCurrency: 'VND', url, availability: 'https://schema.org/PreOrder', priceValidUntil: priceValid },
   };
   const nav = [`<a href="../">‹ Tất cả sản phẩm</a>`];
   if (prev) nav.push(`<a href="${prev.id}.html">Món trước: ${esc(cleanName(prev.name))}</a>`);
@@ -116,6 +119,59 @@ function page(p, cat, prev, next) {
 </html>`;
 }
 
+// Trang liệt kê toàn bộ món bằng HTML tĩnh: Googlebot đọc tới 417 link mà không cần chạy JavaScript,
+// nên sitemap XML có đỏ cũng không còn là cửa duy nhất
+function htmlMap(rows){
+  const byCat = new Map();
+  rows.forEach(r => { if (!byCat.has(r.cat)) byCat.set(r.cat, []); byCat.get(r.cat).push(r); });
+  const secs = [...byCat.entries()].sort((a, b) => b[1].length - a[1].length).map(([c, list]) =>
+    ` <section class="smap-sec">
+  <h2>${esc(c)} <i>${list.length}</i></h2>
+  <ul class="smap-list">${list.map(r => `<li><a href="p/${r.p.id}.html">${esc(cleanName(r.p.name))}</a><span>${vnd(r.p.price)}</span></li>`).join('')}</ul>
+ </section>`).join('\n');
+  const url = `${SITE}/sitemap.html`;
+  return `<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sơ đồ trang web – ${rows.length} món đồ chơi order | uadochoiha</title>
+<meta name="description" content="Toàn bộ ${rows.length} món đồ chơi, gấu bông, balo, phụ kiện order nội địa Trung của uadochoiha, chia theo danh mục kèm giá.">
+<link rel="canonical" href="${url}">
+<meta name="theme-color" content="#36425f">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="uadochoiha">
+<meta property="og:title" content="Sơ đồ trang web – uadochoiha">
+<meta property="og:url" content="${url}">
+<meta name="twitter:card" content="summary">
+<link rel="icon" type="image/png" href="avatar.png">
+<link rel="preload" href="CookieRun-VN.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="topbar"><div class="wrap tb"><a class="tb-brand" href="./">uadochoiha</a></div></div>
+<main class="wrap smap">
+ <h1>Sơ đồ trang web</h1>
+ <p class="smap-sub">Toàn bộ ${rows.length} món đang nhận order, chia theo danh mục và kèm giá. Nhắn Zalo 0931 328 825 để chốt món.</p>
+${secs}
+</main>
+<footer><div class="wrap ft ft2">
+ <div class="ft-col">
+  <h3>uadochoiha</h3>
+  <p>Đồ chơi order nội địa Trung – Taobao, 1688, Pinduoduo. Ship toàn quốc từ HCM.</p>
+  <p><a href="./">Về trang chủ</a></p>
+ </div>
+ <div class="ft-col">
+  <h3>Liên hệ</h3>
+  <a href="${ZALO}" target="_blank" rel="noopener">Zalo 0931 328 825</a>
+  <a href="https://www.instagram.com/uadochoiha" target="_blank" rel="noopener">Instagram</a>
+  <a href="https://www.tiktok.com/@uadochoiha" target="_blank" rel="noopener">TikTok</a>
+ </div>
+</div></footer>
+</body>
+</html>`;
+}
+
 async function main(){
   const src = fs.readFileSync(path.join(ROOT, 'script.js'), 'utf8');
   const apiUrl = src.match(/const API_URL\s*=\s*'([^']*)'/)[1];
@@ -160,7 +216,8 @@ async function main(){
 
   const urlset = list => '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
     list.map(u => `  <url><loc>${u.url}</loc><lastmod>${u.lastmod}</lastmod></url>`).join('\n') + '\n</urlset>\n';
-  const pages = [{ url: SITE + '/', lastmod: today }];
+  const pages = [{ url: SITE + '/', lastmod: today }, { url: `${SITE}/sitemap.html`, lastmod: today }];
+  fs.writeFileSync(path.join(ROOT, 'sitemap.html'), htmlMap(rows));
   fs.writeFileSync(path.join(ROOT, 'sitemap-pages.xml'), urlset(pages));
   fs.writeFileSync(path.join(ROOT, 'sitemap-products.xml'), urlset(rows));
   // sitemap.xml là index: Google đọc file này chỉ ~400 bytes rồi tải từng file con, hỏng 1 file con vẫn còn file kia

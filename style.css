@@ -200,3 +200,17 @@ border-radius:18px;padding:16px;box-shadow:0 6px 16px rgba(10,16,32,.28)}
 @media(min-width:760px){.item-grid{grid-template-columns:380px minmax(0,1fr);gap:26px;padding:22px}
 .item-info h1{font-size:30px;line-height:37px}}
 @media(max-width:760px){.ft2{grid-template-columns:1fr}}
+/* Trang sitemap.html — danh sách link tĩnh tới từng món, Googlebot lần được mà không cần chạy JavaScript */
+.smap{padding:18px 0 26px}
+.smap h1{font-size:26px;line-height:32px;margin:0 0 6px}
+.smap-sub{font-size:15px;line-height:22px;color:var(--mute);margin:0 0 18px}
+.smap-sec{margin:0 0 20px}
+.smap-sec h2{font-size:19px;line-height:24px;margin:0 0 8px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.smap-sec h2 i{font-style:normal;font-size:14px;color:var(--mute)}
+.smap-list{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px 10px}
+.smap-list li{display:flex;align-items:baseline;gap:7px;background:var(--card);border:1px solid var(--line);
+border-radius:10px;padding:6px 10px;font-size:14px;line-height:19px;max-width:100%}
+.smap-list a{color:var(--ink);text-decoration:none;overflow-wrap:anywhere}
+.smap-list a:hover{color:var(--pink)}
+.smap-list span{color:var(--sky);white-space:nowrap}
+@media(min-width:760px){.smap h1{font-size:32px;line-height:39px}.smap-list li{font-size:15px;line-height:21px}}

@@ -14,7 +14,7 @@ Website cửa hàng đồ chơi — trang giới thiệu, tìm kiếm và đặt
 - **Lưu trữ linh hoạt** — Google Apps Script (đồng bộ đám mây), file `products.json`, hoặc `localStorage`
 - **Xuất dữ liệu** — xuất `products.json` để đẩy lên GitHub
 - **Hiệu ứng vui** — emoji bay, nhũ lấp lánh theo con trỏ, confetti tim khi bấm, thẻ bật nhẹ
-- **Lên Google** — mỗi món có trang riêng `p/<id>.html` với tên, giá, ảnh và JSON-LD nằm thẳng trong HTML (không phải chờ JavaScript), kèm `sitemap.xml` và `robots.txt`; trang chủ chỉ gắn link tới món đã có trang tĩnh (`p/manifest.json`) nên món mới chưa sinh trang không dính 404; trang xác minh Google Search Console đặt ở gốc repo
+- **Lên Google** — mỗi món có trang riêng `p/<id>.html` với tên, giá, ảnh và JSON-LD nằm thẳng trong HTML (không phải chờ JavaScript); thêm trang `sitemap.html` liệt kê toàn bộ món bằng link tĩnh nên Googlebot lần được hết kể cả khi không chạy JS; `sitemap.xml`/`sitemap.txt` + `robots.txt`; trang chủ chỉ gắn link tới món đã có trang tĩnh (`p/manifest.json`) nên món mới chưa sinh trang không dính 404; trang xác minh Google Search Console đặt ở gốc repo
 
 ## Công nghệ
 
@@ -37,7 +37,9 @@ uadochoiha/
 ├── make-pages.js              # sinh p/<id>.html + sitemap.xml từ dữ liệu Google; đọc thẳng đoạn CATS/catOf trong script.js (marker CATS_DATA / CATS_LOGIC) nên nhóm danh mục không thể lệch trang chủ
 ├── p/                         # trang sản phẩm tĩnh + manifest.json — do make-pages.js sinh, không sửa tay
 ├── robots.txt                 # cho phép Google thu thập + trỏ tới sitemap
-├── sitemap.xml                # sitemap index trỏ tới sitemap-pages.xml (trang chủ) + sitemap-products.xml (toàn bộ món)
+├── sitemap.xml                # sitemap index trỏ tới sitemap-pages.xml (trang chủ + sitemap.html) + sitemap-products.xml (toàn bộ món)
+├── sitemap.txt                # cùng danh sách URL nhưng dạng text thuần 1 dòng/URL — phòng khi Google parse XML hỏng
+├── sitemap.html               # trang liệt kê 400+ món chia theo danh mục, link tĩnh — Googlebot tới được từng món không cần chạy JavaScript
 ├── google846760f274bb1608.html # file xác minh Google Search Console — xóa là mất quyền sở hữu trang
 └── .nojekyll                  # báo GitHub Pages chở nguyên file, khỏi qua Jekyll
 ```
