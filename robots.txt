@@ -2,3 +2,4 @@ User-agent: *
 Allow: /
 
 Sitemap: https://cucromoi.github.io/uadochoiha/sitemap.xml
+Sitemap: https://cucromoi.github.io/uadochoiha/sitemap.txt

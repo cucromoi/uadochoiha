@@ -172,6 +172,8 @@ async function main(){
       return `  <sitemap><loc>${SITE}/${f}</loc><lastmod>${mod}</lastmod></sitemap>`;
     }).join('\n') + '\n</sitemapindex>\n');
   const urls = pages.concat(rows);
+  // sitemap.txt: text thuần, mỗi dòng 1 URL — không có XML để mà parse hỏng, và là URL mới nên không dính cache lỗi của sitemap.xml
+  fs.writeFileSync(path.join(ROOT, 'sitemap.txt'), urls.map(u => u.url).join('\n') + '\n');
   // Trang chủ chỉ gắn link tới món có trang tĩnh thật; món mới thêm chưa chạy lệnh này thì không bị link 404
   fs.writeFileSync(path.join(dir, 'manifest.json'), JSON.stringify(sorted.map(r => r.p.id)));
 
@@ -179,7 +181,7 @@ async function main(){
   sorted.forEach(r => { byCat[r.cat] = (byCat[r.cat] || 0) + 1; });
   console.log('món:', products.length, '| trang đã sinh:', sorted.length,
     '| dung lượng:', (bytes / 1048576).toFixed(2) + 'MB', '| trung bình:', Math.round(bytes / sorted.length) + ' bytes');
-  console.log('sitemap index:', urls.length, 'URL trong 2 file con | trang viết lại:', rows.filter(r => prevHtml.get(r.p.id + '.html') !== r.html).length, '| ngày sửa khác nhau:', new Set(rows.map(r => r.lastmod)).size);
+  console.log('sitemap index:', urls.length, 'URL trong 2 file con + sitemap.txt | trang viết lại:', rows.filter(r => prevHtml.get(r.p.id + '.html') !== r.html).length, '| ngày sửa khác nhau:', new Set(rows.map(r => r.lastmod)).size);
   if (noImg) console.log('lưu ý:', noImg, 'món không có ảnh (trang vẫn sinh, chỉ thiếu og:image)');
   console.log('danh mục:', Object.entries(byCat).sort((a, b) => b[1] - a[1]).map(([k, v]) => k + ' ' + v).join(' · '));
 }
