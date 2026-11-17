@@ -14,8 +14,6 @@ const OFF_RE = /hàng off|\[off|off\]|đã bán|sold ?out|ngừng nhận/i;
 // thành "chó" -> 115 món bị nhét vào Thú bông.
 // Từ nào khớp TRÁI NHẤT thắng; cùng vị trí thì cụm dài hơn thắng ("hộp bút" trước "bút").
 // Viết CÓ DẤU vì "bìa" khác "bia", "kệ" khác "xe". Đo lại trên 406 món: 13 nhóm, chỉ 1 món vào "Khác".
-/* make-pages.js cắt đúng 2 đoạn có marker này để trang p/<id>.html nhóm danh mục giống hệt trang chủ */
-// >>> CATS_DATA
 const CATS = [
   ['Thú bông', ['gấu bông', 'thú bông', 'cục bông', 'plush', 'chó rách', 'chó rán', 'bông', 'gấu']],
   ['Balo & túi', ['balo', 'ba lô', 'tote', 'pouch', 'itabag', 'crossbag', 'card holder', 'ví cầm', 'ví gập', 'ví đựng', 'ví', 'bóp', 'thắt lưng', 'dây thắt', 'dây rút', 'túi']],
@@ -36,7 +34,6 @@ const CATS = [
 // Tên kiểu "chiikawa gõ mõ", "usagi ngái ngủ" không có danh từ chỉ loại -> figure/thú bông của nhà đó
 const CAT_CHARS = ['chiikawa', 'hachiware', 'usagi', 'rilakkuma', 'korilakkuma', 'miffy', 'melody', 'kitty', 'pompompurin', 'cinnamoroll', 'snoopy', 'sumikko', 'hamtaro', 'pingu', 'momonga', 'aiko', 'kuromi', 'pochacco'];
 const CAT_PREFIX_DROP = ['hàng off', 'chính hãng', 'tổng hợp', 'gom', 'error', 'restock', 'sale', 'new', 'only'];
-// <<< CATS_DATA
 
 const SAMPLE = [
  {id:1,name:'Gấu bông Bunny tai dài',price:129000,desc:'Thỏ bông mềm mịn, ôm êm, cao 30cm. Quà tặng siêu dễ thương.',img:'',emoji:'🐰'},
@@ -61,13 +58,11 @@ const scrub = s => String(s??'').replace(IG_TAIL, '');   // chữ ký trình scr
 function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2200)}
 
 let products = [], admin = sessionStorage.getItem('tbx_admin') === '1', page = 1, editId = null, imgData = '';
-let pageIds = new Set();   // id món đã có trang tĩnh p/<id>.html; món mới chưa sinh trang thì không gắn link tránh 404
 let cat = '';
 
 /* ===== GIÚP HIỂN THỊ ===== */
 const isOff = p => OFF_RE.test((p.name || '') + ' ' + (p.desc || ''));
 // Bỏ emoji + dấu câu, giữ nguyên dấu tiếng Việt để "chó" không nhầm với "cho"
-// >>> CATS_LOGIC
 const plain = s => String(s || '').toLowerCase()
   .replace(/[\p{Extended_Pictographic}\u200d\ufe0f]/gu, ' ')
   .replace(/[^0-9a-zàáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđ\s]/g, ' ')
@@ -92,7 +87,6 @@ function catOf(p) {
   catMemo.set(key, c);
   return c;
 }
-// <<< CATS_LOGIC
 // Thẻ chỉ rộng ~230-260px nên gọi bản 400px của Drive (đo: w800 = 47KB, w400 = 26KB)
 const thumb = (u, w) => String(u || '').replace(/sz=w\d+/, 'sz=w' + w);
 
@@ -110,16 +104,7 @@ async function api(action, data = {}, post = false){
 const CACHE_KEY = 'uadochoiha_cloud_cache_v1';
 const cachePut = () => { try{ localStorage.setItem(CACHE_KEY, JSON.stringify(products)); }catch(e){} };
 const cacheGet = () => { try{ const s = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null'); return Array.isArray(s) ? s : null; }catch(e){ return null } };
-async function fetchPageIds(){
-  try{
-    const r = await fetch('p/manifest.json', {cache:'no-store'});
-    if(!r.ok) return new Set();
-    const a = await r.json();
-    return new Set((Array.isArray(a) ? a : []).map(String));
-  }catch(e){ return new Set(); }
-}
 async function load(){
-  pageIds = await fetchPageIds();
   if(API_URL){
     const cached = cacheGet();
     let drawnFromCache = !!(cached && cached.length);
@@ -222,19 +207,17 @@ function render(){
   if(page > pages) page = pages;
   const slice = list.slice((page-1)*PER_PAGE, page*PER_PAGE);
   $('#count').textContent = list.length + ' sản phẩm' + (cat ? ' · ' + cat : '');
-  $('#grid').innerHTML = slice.length ? slice.map(p => {
-    const href = pageIds.has(String(p.id)) ? `p/${p.id}.html` : '';
-    return `
+  $('#grid').innerHTML = slice.length ? slice.map(p => `
    <article class="card">
-    ${href ? `<a class="pic-link" href="${href}" aria-label="${esc(p.name)}">` : ''}<div class="pic">${p.img ? `<img src="${esc(thumb(p.img,400))}" alt="${esc(p.name)}" loading="lazy">` : esc(p.emoji||'🧸')}</div>${href ? '</a>' : ''}
+    <div class="pic">${p.img ? `<img src="${esc(thumb(p.img,400))}" alt="${esc(p.name)}" loading="lazy">` : esc(p.emoji||'🧸')}</div>
     <div class="info">
-     <h3 title="${esc(p.name)}">${href ? `<a href="${href}">${hl(p.name, toks)}</a>` : hl(p.name, toks)}</h3>
+     <h3 title="${esc(p.name)}">${hl(p.name, toks)}</h3>
      <p class="desc">${hl(scrub(p.desc), toks)}</p>
      <div class="price">${vnd(p.price)}</div>
      ${safeUrl(p.link) ? `<a class="more" href="${esc(safeUrl(p.link))}" target="_blank" rel="noopener noreferrer">Xem bài viết</a>` : ''}
      ${admin ? `<div class="row"><button class="btn" data-edit="${p.id}">Sửa</button><button class="btn g" data-del="${p.id}">Xóa</button></div>` : ''}
     </div>
-   </article>`; }).join('')
+   </article>`).join('')
    : emptyBox();
   const b = [`<button ${page===1?'disabled':''} data-pg="${page-1}" aria-label="Trang trước">‹</button>`];
   for(let i=1;i<=pages;i++) if(pages<=7 || i===1 || i===pages || Math.abs(i-page)<=1)
@@ -257,7 +240,7 @@ function emptyBox(){
     <p class="hint">Thử bỏ bớt từ khoá, đổi khoảng giá hoặc chọn danh mục khác nhé!</p>
   </div>`;
 }
-const paint = () => { renderCats(); render(); jsonLd(); };
+const paint = () => { renderCats(); render(); };
 
 /* ===== SỰ KIỆN ===== */
 ['q','min','max','sort'].forEach(id => $('#'+id).addEventListener('input', () => {page=1;render()}));
@@ -414,21 +397,6 @@ $('#grid').onclick = async e => {
   }
 };
 
-/* Dữ liệu có cấu trúc để Google và mạng xã hội đọc ra giá + tình trạng từng món */
-function jsonLd(){
-  document.getElementById('ld')?.remove();   // paint() có thể chạy 2 lần (bản lưu rồi bản thật)
-  const s = document.createElement('script'); s.id = 'ld'; s.type = 'application/ld+json';
-  s.textContent = JSON.stringify({
-    '@context': 'https://schema.org', '@type': 'ItemList', name: 'uadochoiha – sản phẩm đang bán',
-    itemListElement: products.slice(0, 60).map((p, i) => ({
-      '@type': 'ListItem', position: i + 1, name: p.name, description: scrub(p.desc) || '',
-      url: location.href, image: p.img ? thumb(p.img, 800) : undefined,
-      offers: {'@type': 'Offer', price: p.price, priceCurrency: 'VND',
-        availability: isOff(p) ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock'}
-    }))
-  });
-  document.head.appendChild(s);
-}
 $('#expBtn').onclick = () => {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([JSON.stringify(products,null,1)],{type:'application/json'}));
